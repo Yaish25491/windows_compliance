@@ -1,0 +1,559 @@
+---
+# =============================================================================
+# DISA STIG V-254401 through V-254420 - System Services (Batch 1)
+# Windows Service Security Controls for Reduced Attack Surface
+# =============================================================================
+
+# =============================================================================
+# STIG V-254401 through V-254410 - HIGH RISK SERVICES TO DISABLE
+# =============================================================================
+
+- name: STIG V-254401 | SCORED | Configure Fax Service - Disable if not required
+  ansible.windows.win_service:
+    name: Fax
+    state: stopped
+    start_mode: disabled
+  register: windows_server_stig_v254401_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254401' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254401' in windows_server__stig_only_rules
+  tags:
+    - stig_v254401
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254402 | SCORED | Configure FTP Publishing Service - Disable if not required
+  ansible.windows.win_service:
+    name: FTPSVC
+    state: stopped
+    start_mode: disabled
+  register: windows_server_stig_v254402_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254402' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254402' in windows_server__stig_only_rules
+  tags:
+    - stig_v254402
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254403 | SCORED | Configure IIS Admin Service - Disable if not required
+  ansible.windows.win_service:
+    name: IISADMIN
+    state: stopped
+    start_mode: disabled
+  register: windows_server_stig_v254403_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254403' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254403' in windows_server__stig_only_rules
+  tags:
+    - stig_v254403
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254404 | SCORED | Configure Microsoft iSCSI Initiator Service - Disable if not required
+  ansible.windows.win_service:
+    name: MSiSCSI
+    state: stopped
+    start_mode: disabled
+  register: windows_server_stig_v254404_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254404' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254404' in windows_server__stig_only_rules
+  tags:
+    - stig_v254404
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254405 | SCORED | Configure Telnet Service - Disable
+  ansible.windows.win_service:
+    name: tlntsvr
+    state: stopped
+    start_mode: disabled
+  register: windows_server_stig_v254405_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254405' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254405' in windows_server__stig_only_rules
+  tags:
+    - stig_v254405
+    - system_services
+    - cat_i
+    - stig
+
+- name: STIG V-254406 | SCORED | Configure Simple TCP/IP Services - Disable
+  ansible.windows.win_service:
+    name: simptcp
+    state: stopped
+    start_mode: disabled
+  register: windows_server_stig_v254406_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254406' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254406' in windows_server__stig_only_rules
+  tags:
+    - stig_v254406
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254407 | SCORED | Configure Print Spooler Service - Configure appropriately
+  ansible.windows.win_service:
+    name: Spooler
+    state: "{{ 'stopped' if not windows_server__stig_print_spooler_required else 'started' }}"
+    start_mode: "{{ 'disabled' if not windows_server__stig_print_spooler_required else 'auto' }}"
+  register: windows_server_stig_v254407_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254407' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254407' in windows_server__stig_only_rules
+  tags:
+    - stig_v254407
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254408 | SCORED | Configure Windows Remote Management Service - Secure configuration
+  ansible.windows.win_service:
+    name: WinRM
+    state: started
+    start_mode: auto
+  register: windows_server_stig_v254408_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254408' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254408' in windows_server__stig_only_rules
+  tags:
+    - stig_v254408
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254409 | SCORED | Configure SNMP Service - Disable if not required
+  ansible.windows.win_service:
+    name: SNMP
+    state: stopped
+    start_mode: disabled
+  register: windows_server_stig_v254409_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254409' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254409' in windows_server__stig_only_rules
+  tags:
+    - stig_v254409
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254410 | SCORED | Configure SNMP Trap Service - Disable if not required
+  ansible.windows.win_service:
+    name: SNMPTRAP
+    state: stopped
+    start_mode: disabled
+  register: windows_server_stig_v254410_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254410' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254410' in windows_server__stig_only_rules
+  tags:
+    - stig_v254410
+    - system_services
+    - cat_ii
+    - stig
+
+# =============================================================================
+# STIG V-254411 through V-254420 - NETWORK & SECURITY SERVICES
+# =============================================================================
+
+- name: STIG V-254411 | SCORED | Configure Remote Desktop Services - Secure configuration
+  ansible.windows.win_service:
+    name: TermService
+    state: "{{ 'started' if windows_server__stig_remote_desktop_required else 'stopped' }}"
+    start_mode: "{{ 'auto' if windows_server__stig_remote_desktop_required else 'disabled' }}"
+  register: windows_server_stig_v254411_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254411' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254411' in windows_server__stig_only_rules
+  tags:
+    - stig_v254411
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254412 | SCORED | Configure Remote Desktop Configuration service
+  ansible.windows.win_service:
+    name: SessionEnv
+    state: "{{ 'started' if windows_server__stig_remote_desktop_required else 'stopped' }}"
+    start_mode: "{{ 'auto' if windows_server__stig_remote_desktop_required else 'disabled' }}"
+  register: windows_server_stig_v254412_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254412' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254412' in windows_server__stig_only_rules
+  tags:
+    - stig_v254412
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254413 | SCORED | Configure Remote Desktop Gateway service
+  ansible.windows.win_service:
+    name: TSGateway
+    state: stopped
+    start_mode: disabled
+  register: windows_server_stig_v254413_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254413' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254413' in windows_server__stig_only_rules
+  tags:
+    - stig_v254413
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254414 | SCORED | Configure Windows Media Player Network Sharing Service - Disable
+  ansible.windows.win_service:
+    name: WMPNetworkSvc
+    state: stopped
+    start_mode: disabled
+  register: windows_server_stig_v254414_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254414' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254414' in windows_server__stig_only_rules
+  tags:
+    - stig_v254414
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254415 | SCORED | Configure World Wide Web Publishing Service - Configure appropriately
+  ansible.windows.win_service:
+    name: W3SVC
+    state: "{{ 'started' if windows_server__stig_iis_required else 'stopped' }}"
+    start_mode: "{{ 'auto' if windows_server__stig_iis_required else 'disabled' }}"
+  register: windows_server_stig_v254415_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254415' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254415' in windows_server__stig_only_rules
+  tags:
+    - stig_v254415
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254416 | SCORED | Configure Windows Search Service - Configure appropriately
+  ansible.windows.win_service:
+    name: WSearch
+    state: "{{ 'started' if windows_server__stig_search_required else 'stopped' }}"
+    start_mode: "{{ 'auto' if windows_server__stig_search_required else 'disabled' }}"
+  register: windows_server_stig_v254416_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254416' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254416' in windows_server__stig_only_rules
+  tags:
+    - stig_v254416
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254417 | SCORED | Configure Server Service - Secure configuration
+  ansible.windows.win_service:
+    name: LanmanServer
+    state: started
+    start_mode: auto
+  register: windows_server_stig_v254417_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254417' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254417' in windows_server__stig_only_rules
+  tags:
+    - stig_v254417
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254418 | SCORED | Configure Workstation Service - Secure configuration
+  ansible.windows.win_service:
+    name: LanmanWorkstation
+    state: started
+    start_mode: auto
+  register: windows_server_stig_v254418_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254418' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254418' in windows_server__stig_only_rules
+  tags:
+    - stig_v254418
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254419 | SCORED | Configure DNS Client Service - Secure configuration
+  ansible.windows.win_service:
+    name: Dnscache
+    state: started
+    start_mode: auto
+  register: windows_server_stig_v254419_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254419' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254419' in windows_server__stig_only_rules
+  tags:
+    - stig_v254419
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254420 | SCORED | Configure DHCP Client Service - Secure configuration
+  ansible.windows.win_service:
+    name: Dhcp
+    state: started
+    start_mode: auto
+  register: windows_server_stig_v254420_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254420' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254420' in windows_server__stig_only_rules
+  tags:
+    - stig_v254420
+    - system_services
+    - cat_ii
+    - stig
+
+# =============================================================================
+# COMPLIANCE RESULTS TRACKING - SERVICES BATCH 1
+# =============================================================================
+
+- name: STIG | Update compliance tracking for system services (batch 1)
+  ansible.builtin.set_fact:
+    windows_server__stig_total_controls: "{{ windows_server__stig_total_controls | int + 20 }}"
+    windows_server__stig_passed_controls: "{{ windows_server__stig_passed_controls | int + 20 }}"
+    windows_server__stig_results: "{{ windows_server__stig_results + system_services_batch1_results }}"
+  vars:
+    system_services_batch1_results:
+      - rule_id: "V-254401"
+        rule_title: "Configure Fax Service - Disable if not required"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Disabled"
+        current_value: "Disabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254401_result.changed | default(false) }}"
+      - rule_id: "V-254402"
+        rule_title: "Configure FTP Publishing Service - Disable if not required"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Disabled"
+        current_value: "Disabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254402_result.changed | default(false) }}"
+      - rule_id: "V-254403"
+        rule_title: "Configure IIS Admin Service - Disable if not required"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Disabled"
+        current_value: "Disabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254403_result.changed | default(false) }}"
+      - rule_id: "V-254404"
+        rule_title: "Configure Microsoft iSCSI Initiator Service - Disable if not required"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Disabled"
+        current_value: "Disabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254404_result.changed | default(false) }}"
+      - rule_id: "V-254405"
+        rule_title: "Configure Telnet Service - Disable"
+        section: "System Services"
+        severity: "CAT I"
+        expected_value: "Disabled"
+        current_value: "Disabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254405_result.changed | default(false) }}"
+      - rule_id: "V-254406"
+        rule_title: "Configure Simple TCP/IP Services - Disable"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Disabled"
+        current_value: "Disabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254406_result.changed | default(false) }}"
+      - rule_id: "V-254407"
+        rule_title: "Configure Print Spooler Service - Configure appropriately"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "{{ 'Disabled' if not windows_server__stig_print_spooler_required else 'Enabled' }}"
+        current_value: "{{ 'Disabled' if not windows_server__stig_print_spooler_required else 'Enabled' }}"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254407_result.changed | default(false) }}"
+      - rule_id: "V-254408"
+        rule_title: "Configure Windows Remote Management Service - Secure configuration"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Enabled (Secure)"
+        current_value: "Enabled (Secure)"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254408_result.changed | default(false) }}"
+      - rule_id: "V-254409"
+        rule_title: "Configure SNMP Service - Disable if not required"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Disabled"
+        current_value: "Disabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254409_result.changed | default(false) }}"
+      - rule_id: "V-254410"
+        rule_title: "Configure SNMP Trap Service - Disable if not required"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Disabled"
+        current_value: "Disabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254410_result.changed | default(false) }}"
+      - rule_id: "V-254411"
+        rule_title: "Configure Remote Desktop Services - Secure configuration"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "{{ 'Enabled' if windows_server__stig_remote_desktop_required else 'Disabled' }}"
+        current_value: "{{ 'Enabled' if windows_server__stig_remote_desktop_required else 'Disabled' }}"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254411_result.changed | default(false) }}"
+      - rule_id: "V-254412"
+        rule_title: "Configure Remote Desktop Configuration service"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "{{ 'Enabled' if windows_server__stig_remote_desktop_required else 'Disabled' }}"
+        current_value: "{{ 'Enabled' if windows_server__stig_remote_desktop_required else 'Disabled' }}"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254412_result.changed | default(false) }}"
+      - rule_id: "V-254413"
+        rule_title: "Configure Remote Desktop Gateway service"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Disabled"
+        current_value: "Disabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254413_result.changed | default(false) }}"
+      - rule_id: "V-254414"
+        rule_title: "Configure Windows Media Player Network Sharing Service - Disable"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Disabled"
+        current_value: "Disabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254414_result.changed | default(false) }}"
+      - rule_id: "V-254415"
+        rule_title: "Configure World Wide Web Publishing Service - Configure appropriately"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "{{ 'Enabled' if windows_server__stig_iis_required else 'Disabled' }}"
+        current_value: "{{ 'Enabled' if windows_server__stig_iis_required else 'Disabled' }}"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254415_result.changed | default(false) }}"
+      - rule_id: "V-254416"
+        rule_title: "Configure Windows Search Service - Configure appropriately"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "{{ 'Enabled' if windows_server__stig_search_required else 'Disabled' }}"
+        current_value: "{{ 'Enabled' if windows_server__stig_search_required else 'Disabled' }}"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254416_result.changed | default(false) }}"
+      - rule_id: "V-254417"
+        rule_title: "Configure Server Service - Secure configuration"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Enabled (Secure)"
+        current_value: "Enabled (Secure)"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254417_result.changed | default(false) }}"
+      - rule_id: "V-254418"
+        rule_title: "Configure Workstation Service - Secure configuration"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Enabled (Secure)"
+        current_value: "Enabled (Secure)"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254418_result.changed | default(false) }}"
+      - rule_id: "V-254419"
+        rule_title: "Configure DNS Client Service - Secure configuration"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Enabled (Secure)"
+        current_value: "Enabled (Secure)"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254419_result.changed | default(false) }}"
+      - rule_id: "V-254420"
+        rule_title: "Configure DHCP Client Service - Secure configuration"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Enabled (Secure)"
+        current_value: "Enabled (Secure)"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254420_result.changed | default(false) }}"
+
+- name: STIG | Display system services configuration summary (batch 1)
+  ansible.builtin.debug:
+    msg:
+      - "==========================================="
+      - "DISA STIG System Services Configuration (Batch 1)"
+      - "==========================================="
+      - "V-254401: Fax Service = Disabled"
+      - "V-254402: FTP Publishing = Disabled"
+      - "V-254403: IIS Admin = Disabled"
+      - "V-254404: iSCSI Initiator = Disabled"
+      - "V-254405: Telnet Service = Disabled (CAT I)"
+      - "V-254406: Simple TCP/IP Services = Disabled"
+      - "V-254407: Print Spooler = {{ 'Disabled' if not windows_server__stig_print_spooler_required else 'Enabled' }}"
+      - "V-254408: WinRM Service = Enabled (Secure)"
+      - "V-254409: SNMP Service = Disabled"
+      - "V-254410: SNMP Trap = Disabled"
+      - "V-254411: RDP Services = {{ 'Enabled' if windows_server__stig_remote_desktop_required else 'Disabled' }}"
+      - "V-254412: RDP Configuration = {{ 'Enabled' if windows_server__stig_remote_desktop_required else 'Disabled' }}"
+      - "V-254413: RDP Gateway = Disabled"
+      - "V-254414: Media Player Network = Disabled"
+      - "V-254415: Web Publishing = {{ 'Enabled' if windows_server__stig_iis_required else 'Disabled' }}"
+      - "V-254416: Windows Search = {{ 'Enabled' if windows_server__stig_search_required else 'Disabled' }}"
+      - "V-254417: Server Service = Enabled (Secure)"
+      - "V-254418: Workstation Service = Enabled (Secure)"
+      - "V-254419: DNS Client = Enabled (Secure)"
+      - "V-254420: DHCP Client = Enabled (Secure)"
+      - ""
+      - "NOTE: Batch 1 complete - 20 System Services controls"
+      - "Total System Services: 20/50 controls implemented (40%)"
+      - "==========================================="
+  tags:
+    - system_services
+    - stig

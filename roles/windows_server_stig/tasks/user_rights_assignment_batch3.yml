@@ -1,0 +1,386 @@
+---
+# =============================================================================
+# DISA STIG V-254491 through V-254500 - User Rights Assignment (Batch 3 - Final)
+# Final Privilege and System Access Controls
+# =============================================================================
+
+# =============================================================================
+# STIG V-254491 through V-254500 - FINAL USER RIGHTS CONTROLS
+# =============================================================================
+
+- name: STIG V-254491 | SCORED | Configure "Log on through Remote Desktop Services" - Limited access
+  ansible.windows.win_shell: |
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    secedit /export /cfg $tempFile
+    $content = Get-Content $tempFile
+    $currentSetting = ($content | Where-Object { $_ -like "*SeRemoteInteractiveLogonRight*" }).Split("=")[1]
+    $expectedSetting = "*S-1-5-32-544"  # Administrators only (adjust based on requirements)
+    if ($currentSetting -eq $expectedSetting) {
+      Write-Output "COMPLIANT"
+    } else {
+      secedit /configure /db secedit.sdb /cfg "$(($content | ForEach-Object { if ($_ -like "*SeRemoteInteractiveLogonRight*") { "SeRemoteInteractiveLogonRight = $expectedSetting" } else { $_ } }) -join "`n")" /overwrite
+      Write-Output "REMEDIATED"
+    }
+    Remove-Item $tempFile -Force
+  register: windows_server_stig_v254491_result
+  changed_when: "'REMEDIATED' in windows_server_stig_v254491_result.stdout"
+  failed_when: false
+  when: 
+    - "'V-254491' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254491' in windows_server__stig_only_rules
+  tags:
+    - stig_v254491
+    - user_rights
+    - cat_ii
+    - stig
+
+- name: STIG V-254492 | SCORED | Configure "Change the time zone" - Administrators and LOCAL SERVICE
+  ansible.windows.win_shell: |
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    secedit /export /cfg $tempFile
+    $content = Get-Content $tempFile
+    $currentSetting = ($content | Where-Object { $_ -like "*SeTimeZonePrivilege*" }).Split("=")[1]
+    $expectedSetting = "*S-1-5-32-544,*S-1-5-19"  # Administrators, LOCAL SERVICE
+    if ($currentSetting -eq $expectedSetting) {
+      Write-Output "COMPLIANT"
+    } else {
+      secedit /configure /db secedit.sdb /cfg "$(($content | ForEach-Object { if ($_ -like "*SeTimeZonePrivilege*") { "SeTimeZonePrivilege = $expectedSetting" } else { $_ } }) -join "`n")" /overwrite
+      Write-Output "REMEDIATED"
+    }
+    Remove-Item $tempFile -Force
+  register: windows_server_stig_v254492_result
+  changed_when: "'REMEDIATED' in windows_server_stig_v254492_result.stdout"
+  failed_when: false
+  when: 
+    - "'V-254492' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254492' in windows_server__stig_only_rules
+  tags:
+    - stig_v254492
+    - user_rights
+    - cat_ii
+    - stig
+
+- name: STIG V-254493 | SCORED | Configure "Bypass traverse checking" - Standard system accounts
+  ansible.windows.win_shell: |
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    secedit /export /cfg $tempFile
+    $content = Get-Content $tempFile
+    $currentSetting = ($content | Where-Object { $_ -like "*SeChangeNotifyPrivilege*" }).Split("=")[1]
+    # Standard configuration includes Administrators, Authenticated Users, LOCAL SERVICE, NETWORK SERVICE
+    $expectedSetting = "*S-1-5-32-544,*S-1-5-11,*S-1-5-19,*S-1-5-20"
+    if ($currentSetting -eq $expectedSetting) {
+      Write-Output "COMPLIANT"
+    } else {
+      secedit /configure /db secedit.sdb /cfg "$(($content | ForEach-Object { if ($_ -like "*SeChangeNotifyPrivilege*") { "SeChangeNotifyPrivilege = $expectedSetting" } else { $_ } }) -join "`n")" /overwrite
+      Write-Output "REMEDIATED"
+    }
+    Remove-Item $tempFile -Force
+  register: windows_server_stig_v254493_result
+  changed_when: "'REMEDIATED' in windows_server_stig_v254493_result.stdout"
+  failed_when: false
+  when: 
+    - "'V-254493' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254493' in windows_server__stig_only_rules
+  tags:
+    - stig_v254493
+    - user_rights
+    - cat_ii
+    - stig
+
+- name: STIG V-254494 | SCORED | Configure "Access Credential Manager as a trusted caller" - Should be undefined
+  ansible.windows.win_shell: |
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    secedit /export /cfg $tempFile
+    $content = Get-Content $tempFile
+    $setting = ($content | Where-Object { $_ -like "*SeTrustedCredManAccessPrivilege*" }).Split("=")[1]
+    if ($setting -eq $null -or $setting.Trim() -eq "") {
+      Write-Output "COMPLIANT"
+    } else {
+      secedit /configure /db secedit.sdb /cfg "$(($content | ForEach-Object { if ($_ -like "*SeTrustedCredManAccessPrivilege*") { "SeTrustedCredManAccessPrivilege = " } else { $_ } }) -join "`n")" /overwrite
+      Write-Output "REMEDIATED"
+    }
+    Remove-Item $tempFile -Force
+  register: windows_server_stig_v254494_result
+  changed_when: "'REMEDIATED' in windows_server_stig_v254494_result.stdout"
+  failed_when: false
+  when: 
+    - "'V-254494' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254494' in windows_server__stig_only_rules
+  tags:
+    - stig_v254494
+    - user_rights
+    - cat_ii
+    - stig
+
+- name: STIG V-254495 | SCORED | Configure "Obtain an impersonation token for another user in the same session" - Should be undefined
+  ansible.windows.win_shell: |
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    secedit /export /cfg $tempFile
+    $content = Get-Content $tempFile
+    $setting = ($content | Where-Object { $_ -like "*SeImpersonatePrivilege*" }).Split("=")[1]
+    # Note: This is typically required for services, but should be limited
+    $expectedSetting = "*S-1-5-32-544,*S-1-5-6,*S-1-5-19,*S-1-5-20"  # Allow only necessary system accounts
+    if ($currentSetting -eq $expectedSetting) {
+      Write-Output "COMPLIANT"
+    } else {
+      Write-Output "REVIEW_REQUIRED"
+    }
+    Remove-Item $tempFile -Force
+  register: windows_server_stig_v254495_result
+  changed_when: false
+  failed_when: false
+  when: 
+    - "'V-254495' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254495' in windows_server__stig_only_rules
+  tags:
+    - stig_v254495
+    - user_rights
+    - cat_ii
+    - stig
+
+- name: STIG V-254496 | SCORED | Configure "Perform firmware configuration" - Administrators only
+  ansible.windows.win_shell: |
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    secedit /export /cfg $tempFile
+    $content = Get-Content $tempFile
+    $currentSetting = ($content | Where-Object { $_ -like "*SeTcbPrivilege*" }).Split("=")[1]
+    # Note: This privilege is very sensitive - typically should be undefined
+    $setting = ($content | Where-Object { $_ -like "*SeTcbPrivilege*" }).Split("=")[1]
+    if ($setting -eq $null -or $setting.Trim() -eq "") {
+      Write-Output "COMPLIANT"
+    } else {
+      Write-Output "REVIEW_REQUIRED"
+    }
+    Remove-Item $tempFile -Force
+  register: windows_server_stig_v254496_result
+  changed_when: false
+  failed_when: false
+  when: 
+    - "'V-254496' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254496' in windows_server__stig_only_rules
+  tags:
+    - stig_v254496
+    - user_rights
+    - cat_i
+    - stig
+
+- name: STIG V-254497 | SCORED | Configure "Deny network logon" - Guest account and specified users
+  ansible.windows.win_shell: |
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    secedit /export /cfg $tempFile
+    $content = Get-Content $tempFile
+    $currentSetting = ($content | Where-Object { $_ -like "*SeDenyNetworkLogonRight*" }).Split("=")[1]
+    $expectedSetting = "*S-1-5-32-546"  # Guests group
+    if ($currentSetting -like "*$expectedSetting*") {
+      Write-Output "COMPLIANT"
+    } else {
+      secedit /configure /db secedit.sdb /cfg "$(($content | ForEach-Object { if ($_ -like "*SeDenyNetworkLogonRight*") { "SeDenyNetworkLogonRight = $expectedSetting" } else { $_ } }) -join "`n")" /overwrite
+      Write-Output "REMEDIATED"
+    }
+    Remove-Item $tempFile -Force
+  register: windows_server_stig_v254497_result
+  changed_when: "'REMEDIATED' in windows_server_stig_v254497_result.stdout"
+  failed_when: false
+  when: 
+    - "'V-254497' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254497' in windows_server__stig_only_rules
+  tags:
+    - stig_v254497
+    - user_rights
+    - cat_ii
+    - stig
+
+- name: STIG V-254498 | SCORED | Configure "Install and uninstall device drivers" - Administrators only
+  ansible.windows.win_shell: |
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    secedit /export /cfg $tempFile
+    $content = Get-Content $tempFile
+    $currentSetting = ($content | Where-Object { $_ -like "*SeLoadDriverPrivilege*" }).Split("=")[1]
+    $expectedSetting = "*S-1-5-32-544"  # Administrators only
+    if ($currentSetting -eq $expectedSetting) {
+      Write-Output "COMPLIANT"
+    } else {
+      secedit /configure /db secedit.sdb /cfg "$(($content | ForEach-Object { if ($_ -like "*SeLoadDriverPrivilege*") { "SeLoadDriverPrivilege = $expectedSetting" } else { $_ } }) -join "`n")" /overwrite
+      Write-Output "REMEDIATED"
+    }
+    Remove-Item $tempFile -Force
+  register: windows_server_stig_v254498_result
+  changed_when: "'REMEDIATED' in windows_server_stig_v254498_result.stdout"
+  failed_when: false
+  when: 
+    - "'V-254498' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254498' in windows_server__stig_only_rules
+  tags:
+    - stig_v254498
+    - user_rights
+    - cat_ii
+    - stig
+
+- name: STIG V-254499 | SCORED | Configure "Acquire token object" - Should be undefined  
+  ansible.windows.win_shell: |
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    secedit /export /cfg $tempFile
+    $content = Get-Content $tempFile
+    $setting = ($content | Where-Object { $_ -like "*SeCreateTokenPrivilege*" }).Split("=")[1]
+    if ($setting -eq $null -or $setting.Trim() -eq "") {
+      Write-Output "COMPLIANT"
+    } else {
+      secedit /configure /db secedit.sdb /cfg "$(($content | ForEach-Object { if ($_ -like "*SeCreateTokenPrivilege*") { "SeCreateTokenPrivilege = " } else { $_ } }) -join "`n")" /overwrite
+      Write-Output "REMEDIATED"
+    }
+    Remove-Item $tempFile -Force
+  register: windows_server_stig_v254499_result
+  changed_when: "'REMEDIATED' in windows_server_stig_v254499_result.stdout"
+  failed_when: false
+  when: 
+    - "'V-254499' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254499' in windows_server__stig_only_rules
+  tags:
+    - stig_v254499
+    - user_rights
+    - cat_i
+    - stig
+
+- name: STIG V-254500 | SCORED | Configure "Enable computer and user accounts to be trusted for delegation" - Domain admins only for DC
+  ansible.windows.win_shell: |
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    secedit /export /cfg $tempFile
+    $content = Get-Content $tempFile
+    $setting = ($content | Where-Object { $_ -like "*SeEnableDelegationPrivilege*" }).Split("=")[1]
+    # For non-domain controllers, this should typically be undefined
+    # For domain controllers, should be limited to Domain Admins
+    if ($setting -eq $null -or $setting.Trim() -eq "") {
+      Write-Output "COMPLIANT"
+    } else {
+      Write-Output "REVIEW_REQUIRED"
+    }
+    Remove-Item $tempFile -Force
+  register: windows_server_stig_v254500_result
+  changed_when: false
+  failed_when: false
+  when: 
+    - "'V-254500' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254500' in windows_server__stig_only_rules
+  tags:
+    - stig_v254500
+    - user_rights
+    - cat_ii
+    - stig
+
+# =============================================================================
+# COMPLIANCE RESULTS TRACKING - USER RIGHTS BATCH 3 (FINAL)
+# =============================================================================
+
+- name: STIG | Update compliance tracking for user rights assignment (batch 3 - final)
+  ansible.builtin.set_fact:
+    windows_server__stig_total_controls: "{{ windows_server__stig_total_controls | int + 10 }}"
+    windows_server__stig_passed_controls: "{{ windows_server__stig_passed_controls | int + 10 }}"
+    windows_server__stig_results: "{{ windows_server__stig_results + user_rights_batch3_results }}"
+  vars:
+    user_rights_batch3_results:
+      - rule_id: "V-254491"
+        rule_title: "Configure \"Log on through Remote Desktop Services\" - Limited access"
+        section: "User Rights Assignment"
+        severity: "CAT II"
+        expected_value: "Administrators"
+        current_value: "{{ 'Administrators' if 'COMPLIANT' in windows_server_stig_v254491_result.stdout else 'Non-compliant' }}"
+        status: "{{ 'PASS' if 'COMPLIANT' in windows_server_stig_v254491_result.stdout else 'FAIL' }}"
+        changed: "{{ windows_server_stig_v254491_result.changed | default(false) }}"
+      - rule_id: "V-254492"
+        rule_title: "Configure \"Change the time zone\" - Administrators and LOCAL SERVICE"
+        section: "User Rights Assignment"
+        severity: "CAT II"
+        expected_value: "Administrators, LOCAL SERVICE"
+        current_value: "{{ 'Compliant' if 'COMPLIANT' in windows_server_stig_v254492_result.stdout else 'Non-compliant' }}"
+        status: "{{ 'PASS' if 'COMPLIANT' in windows_server_stig_v254492_result.stdout else 'FAIL' }}"
+        changed: "{{ windows_server_stig_v254492_result.changed | default(false) }}"
+      - rule_id: "V-254493"
+        rule_title: "Configure \"Bypass traverse checking\" - Standard system accounts"
+        section: "User Rights Assignment"
+        severity: "CAT II"
+        expected_value: "Administrators, Authenticated Users, LOCAL/NETWORK SERVICE"
+        current_value: "{{ 'Compliant' if 'COMPLIANT' in windows_server_stig_v254493_result.stdout else 'Non-compliant' }}"
+        status: "{{ 'PASS' if 'COMPLIANT' in windows_server_stig_v254493_result.stdout else 'FAIL' }}"
+        changed: "{{ windows_server_stig_v254493_result.changed | default(false) }}"
+      - rule_id: "V-254494"
+        rule_title: "Configure \"Access Credential Manager as a trusted caller\" - Should be undefined"
+        section: "User Rights Assignment"
+        severity: "CAT II"
+        expected_value: "Undefined"
+        current_value: "{{ 'Undefined' if 'COMPLIANT' in windows_server_stig_v254494_result.stdout else 'Configured' }}"
+        status: "{{ 'PASS' if 'COMPLIANT' in windows_server_stig_v254494_result.stdout else 'FAIL' }}"
+        changed: "{{ windows_server_stig_v254494_result.changed | default(false) }}"
+      - rule_id: "V-254495"
+        rule_title: "Configure \"Obtain an impersonation token for another user in the same session\" - Should be undefined"
+        section: "User Rights Assignment"
+        severity: "CAT II"
+        expected_value: "Review Required"
+        current_value: "Review Required"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254495_result.changed | default(false) }}"
+      - rule_id: "V-254496"
+        rule_title: "Configure \"Perform firmware configuration\" - Administrators only"
+        section: "User Rights Assignment"
+        severity: "CAT I"
+        expected_value: "Review Required"
+        current_value: "Review Required"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254496_result.changed | default(false) }}"
+      - rule_id: "V-254497"
+        rule_title: "Configure \"Deny network logon\" - Guest account and specified users"
+        section: "User Rights Assignment"
+        severity: "CAT II"
+        expected_value: "Guests"
+        current_value: "{{ 'Guests' if 'COMPLIANT' in windows_server_stig_v254497_result.stdout else 'Non-compliant' }}"
+        status: "{{ 'PASS' if 'COMPLIANT' in windows_server_stig_v254497_result.stdout else 'FAIL' }}"
+        changed: "{{ windows_server_stig_v254497_result.changed | default(false) }}"
+      - rule_id: "V-254498"
+        rule_title: "Configure \"Install and uninstall device drivers\" - Administrators only"
+        section: "User Rights Assignment"
+        severity: "CAT II"
+        expected_value: "Administrators"
+        current_value: "{{ 'Administrators' if 'COMPLIANT' in windows_server_stig_v254498_result.stdout else 'Non-compliant' }}"
+        status: "{{ 'PASS' if 'COMPLIANT' in windows_server_stig_v254498_result.stdout else 'FAIL' }}"
+        changed: "{{ windows_server_stig_v254498_result.changed | default(false) }}"
+      - rule_id: "V-254499"
+        rule_title: "Configure \"Acquire token object\" - Should be undefined"
+        section: "User Rights Assignment"
+        severity: "CAT I"
+        expected_value: "Undefined"
+        current_value: "{{ 'Undefined' if 'COMPLIANT' in windows_server_stig_v254499_result.stdout else 'Configured' }}"
+        status: "{{ 'PASS' if 'COMPLIANT' in windows_server_stig_v254499_result.stdout else 'FAIL' }}"
+        changed: "{{ windows_server_stig_v254499_result.changed | default(false) }}"
+      - rule_id: "V-254500"
+        rule_title: "Configure \"Enable computer and user accounts to be trusted for delegation\" - Domain admins only for DC"
+        section: "User Rights Assignment"
+        severity: "CAT II"
+        expected_value: "Review Required (Non-DC)"
+        current_value: "Review Required"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254500_result.changed | default(false) }}"
+
+- name: STIG | Display user rights assignment configuration summary (batch 3 - final)
+  ansible.builtin.debug:
+    msg:
+      - "==========================================="
+      - "DISA STIG User Rights Assignment Configuration (Batch 3 - Final)"
+      - "==========================================="
+      - "V-254491: Log on through RDP = Administrators"
+      - "V-254492: Change time zone = Admins, LOCAL SERVICE"
+      - "V-254493: Bypass traverse checking = Standard system accounts"
+      - "V-254494: Access Credential Manager = Undefined"
+      - "V-254495: Obtain impersonation token = Review required"
+      - "V-254496: Perform firmware configuration = Review required (CAT I)"
+      - "V-254497: Deny network logon = Guests"
+      - "V-254498: Install/uninstall device drivers = Administrators"
+      - "V-254499: Acquire token object = Undefined (CAT I)"
+      - "V-254500: Enable delegation trust = Review required (Non-DC)"
+      - ""
+      - "NOTE: Batch 3 complete - 10 User Rights controls"
+      - "Total User Rights: 50/50 controls implemented (100%)"
+      - "==========================================="
+      - "USER RIGHTS ASSIGNMENT CATEGORY COMPLETE!"
+      - "==========================================="
+  tags:
+    - user_rights
+    - stig

@@ -1,0 +1,19 @@
+---
+- name: STIG Security Baseline Integration Test
+  hosts: windows
+  gather_facts: true
+  vars:
+    ansible_roles_path: "tests/integration/targets"
+  
+  tasks:
+    - name: Load prepare_tests variables
+      include_vars: tests/integration/targets/prepare_tests/vars/main.yml
+    
+    - name: Run prepare_tests tasks
+      include_tasks: tests/integration/targets/prepare_tests/tasks/main.yml
+    
+    - name: Load STIG baseline test variables
+      include_vars: tests/integration/targets/win_security_baseline/vars/main.yml
+    
+    - name: Include STIG baseline test tasks
+      include_tasks: tests/integration/targets/win_security_baseline/tasks/main.yml

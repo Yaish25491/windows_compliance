@@ -1,0 +1,7 @@
+---
+test_cis_output_dir: "{{ test_base_directory }}\\cis_{{ unique_test_id }}"
+test_cis_report_name: "CIS Test Report {{ unique_test_id }}"
+test_cis_level1_check_report_filename: "cis_level1_check_report_{{ unique_test_id }}.json"
+test_cis_level1_apply_report_filename: "cis_level1_apply_report_{{ unique_test_id }}.json"
+test_cis_level2_check_report_filename: "cis_level2_check_report_{{ unique_test_id }}.json"
+test_cis_html_report_filename: "cis_report_{{ unique_test_id }}.html"

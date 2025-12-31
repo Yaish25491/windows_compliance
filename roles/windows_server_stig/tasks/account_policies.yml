@@ -1,0 +1,323 @@
+---
+# =============================================================================
+# DISA STIG V-254238 through V-254246 - Account Policies
+# Password Policy and Account Lockout Policy Controls
+# =============================================================================
+
+# =============================================================================
+# STIG V-254238 through V-254243 - PASSWORD POLICY CONTROLS
+# =============================================================================
+
+- name: STIG V-254238 | SCORED | Enforce password history ({{ windows_server__stig_password_history_size }} passwords)
+  ansible.windows.win_shell: |
+    net accounts /uniquepw:{{ windows_server__stig_password_history_size }}
+    if ($LASTEXITCODE -eq 0) {
+      Write-Output "CONFIGURED: Password history set to {{ windows_server__stig_password_history_size }} passwords"
+    } else {
+      Write-Error "FAILED: Unable to configure password history"
+      exit $LASTEXITCODE
+    }
+  register: windows_server_stig_v254238_result
+  changed_when: windows_server_stig_v254238_result.rc == 0
+  failed_when: windows_server_stig_v254238_result.rc != 0 and not ansible_check_mode
+  when: 
+    - "'V-254238' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254238' in windows_server__stig_only_rules
+  tags:
+    - stig_v254238
+    - account_policies
+    - password_policies
+    - cat_ii
+    - stig
+
+- name: STIG V-254239 | SCORED | Set maximum password age ({{ windows_server__stig_maximum_password_age }} days)
+  ansible.windows.win_shell: |
+    net accounts /maxpwage:{{ windows_server__stig_maximum_password_age }}
+    if ($LASTEXITCODE -eq 0) {
+      Write-Output "CONFIGURED: Maximum password age set to {{ windows_server__stig_maximum_password_age }} days"
+    } else {
+      Write-Error "FAILED: Unable to configure maximum password age"
+      exit $LASTEXITCODE
+    }
+  register: windows_server_stig_v254239_result
+  changed_when: windows_server_stig_v254239_result.rc == 0
+  failed_when: windows_server_stig_v254239_result.rc != 0 and not ansible_check_mode
+  when: 
+    - "'V-254239' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254239' in windows_server__stig_only_rules
+  tags:
+    - stig_v254239
+    - account_policies
+    - password_policies
+    - cat_ii
+    - stig
+
+- name: STIG V-254240 | SCORED | Set minimum password age ({{ windows_server__stig_minimum_password_age }} day)
+  ansible.windows.win_shell: |
+    net accounts /minpwage:{{ windows_server__stig_minimum_password_age }}
+    if ($LASTEXITCODE -eq 0) {
+      Write-Output "CONFIGURED: Minimum password age set to {{ windows_server__stig_minimum_password_age }} day"
+    } else {
+      Write-Error "FAILED: Unable to configure minimum password age"
+      exit $LASTEXITCODE
+    }
+  register: windows_server_stig_v254240_result
+  changed_when: windows_server_stig_v254240_result.rc == 0
+  failed_when: windows_server_stig_v254240_result.rc != 0 and not ansible_check_mode
+  when: 
+    - "'V-254240' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254240' in windows_server__stig_only_rules
+  tags:
+    - stig_v254240
+    - account_policies
+    - password_policies
+    - cat_ii
+    - stig
+
+- name: STIG V-254241 | SCORED | Set minimum password length ({{ windows_server__stig_minimum_password_length }} characters)
+  ansible.windows.win_shell: |
+    net accounts /minpwlen:{{ windows_server__stig_minimum_password_length }}
+    if ($LASTEXITCODE -eq 0) {
+      Write-Output "CONFIGURED: Minimum password length set to {{ windows_server__stig_minimum_password_length }} characters"
+    } else {
+      Write-Error "FAILED: Unable to configure minimum password length"
+      exit $LASTEXITCODE
+    }
+  register: windows_server_stig_v254241_result
+  changed_when: windows_server_stig_v254241_result.rc == 0
+  failed_when: windows_server_stig_v254241_result.rc != 0 and not ansible_check_mode
+  when: 
+    - "'V-254241' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254241' in windows_server__stig_only_rules
+  tags:
+    - stig_v254241
+    - account_policies
+    - password_policies
+    - cat_ii
+    - stig
+
+- name: STIG V-254242 | SCORED | Configure password complexity requirements ({{ 'Enabled' if windows_server__stig_password_complexity_enabled else 'Disabled' }})
+  ansible.windows.win_shell: |
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    secedit /export /cfg $tempFile | Out-Null
+    (Get-Content $tempFile) -replace "PasswordComplexity = .*", "PasswordComplexity = {{ '1' if windows_server__stig_password_complexity_enabled else '0' }}" | Set-Content $tempFile
+    secedit /configure /db secedit.sdb /cfg $tempFile | Out-Null
+    Remove-Item $tempFile -Force
+    if ($LASTEXITCODE -eq 0) {
+      Write-Output "CONFIGURED: Password complexity {{ 'enabled' if windows_server__stig_password_complexity_enabled else 'disabled' }}"
+    } else {
+      Write-Error "FAILED: Unable to configure password complexity"
+      exit $LASTEXITCODE
+    }
+  register: windows_server_stig_v254242_result
+  changed_when: windows_server_stig_v254242_result.rc == 0
+  failed_when: windows_server_stig_v254242_result.rc != 0 and not ansible_check_mode
+  when: 
+    - "'V-254242' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254242' in windows_server__stig_only_rules
+  tags:
+    - stig_v254242
+    - account_policies
+    - password_policies
+    - cat_ii
+    - stig
+
+- name: STIG V-254243 | SCORED | Disable reversible password encryption
+  ansible.windows.win_shell: |
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    secedit /export /cfg $tempFile | Out-Null
+    (Get-Content $tempFile) -replace "ClearTextPassword = .*", "ClearTextPassword = {{ '0' if not windows_server__stig_password_reversible_encryption else '1' }}" | Set-Content $tempFile
+    secedit /configure /db secedit.sdb /cfg $tempFile | Out-Null
+    Remove-Item $tempFile -Force
+    if ($LASTEXITCODE -eq 0) {
+      Write-Output "CONFIGURED: Reversible password encryption {{ 'disabled' if not windows_server__stig_password_reversible_encryption else 'enabled' }}"
+    } else {
+      Write-Error "FAILED: Unable to configure reversible password encryption"
+      exit $LASTEXITCODE
+    }
+  register: windows_server_stig_v254243_result
+  changed_when: windows_server_stig_v254243_result.rc == 0
+  failed_when: windows_server_stig_v254243_result.rc != 0 and not ansible_check_mode
+  when: 
+    - "'V-254243' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254243' in windows_server__stig_only_rules
+  tags:
+    - stig_v254243
+    - account_policies
+    - password_policies
+    - cat_i
+    - stig
+
+# =============================================================================
+# STIG V-254244 through V-254246 - ACCOUNT LOCKOUT POLICY CONTROLS
+# =============================================================================
+
+- name: STIG V-254244 | SCORED | Configure account lockout duration ({{ windows_server__stig_account_lockout_duration }} minutes)
+  ansible.windows.win_shell: |
+    net accounts /lockoutduration:{{ windows_server__stig_account_lockout_duration }}
+    if ($LASTEXITCODE -eq 0) {
+      Write-Output "CONFIGURED: Account lockout duration set to {{ windows_server__stig_account_lockout_duration }} minutes"
+    } else {
+      Write-Error "FAILED: Unable to configure account lockout duration"
+      exit $LASTEXITCODE
+    }
+  register: windows_server_stig_v254244_result
+  changed_when: windows_server_stig_v254244_result.rc == 0
+  failed_when: windows_server_stig_v254244_result.rc != 0 and not ansible_check_mode
+  when: 
+    - "'V-254244' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254244' in windows_server__stig_only_rules
+  tags:
+    - stig_v254244
+    - account_policies
+    - lockout_policies
+    - cat_ii
+    - stig
+
+- name: STIG V-254245 | SCORED | Configure account lockout threshold ({{ windows_server__stig_account_lockout_threshold }} attempts)
+  ansible.windows.win_shell: |
+    net accounts /lockoutthreshold:{{ windows_server__stig_account_lockout_threshold }}
+    if ($LASTEXITCODE -eq 0) {
+      Write-Output "CONFIGURED: Account lockout threshold set to {{ windows_server__stig_account_lockout_threshold }} attempts"
+    } else {
+      Write-Error "FAILED: Unable to configure account lockout threshold"
+      exit $LASTEXITCODE
+    }
+  register: windows_server_stig_v254245_result
+  changed_when: windows_server_stig_v254245_result.rc == 0
+  failed_when: windows_server_stig_v254245_result.rc != 0 and not ansible_check_mode
+  when: 
+    - "'V-254245' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254245' in windows_server__stig_only_rules
+  tags:
+    - stig_v254245
+    - account_policies
+    - lockout_policies
+    - cat_ii
+    - stig
+
+- name: STIG V-254246 | SCORED | Configure reset account lockout counter ({{ windows_server__stig_reset_account_lockout_counter }} minutes)
+  ansible.windows.win_shell: |
+    net accounts /lockoutwindow:{{ windows_server__stig_reset_account_lockout_counter }}
+    if ($LASTEXITCODE -eq 0) {
+      Write-Output "CONFIGURED: Reset account lockout counter set to {{ windows_server__stig_reset_account_lockout_counter }} minutes"
+    } else {
+      Write-Error "FAILED: Unable to configure reset account lockout counter"
+      exit $LASTEXITCODE
+    }
+  register: windows_server_stig_v254246_result
+  changed_when: windows_server_stig_v254246_result.rc == 0
+  failed_when: windows_server_stig_v254246_result.rc != 0 and not ansible_check_mode
+  when: 
+    - "'V-254246' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254246' in windows_server__stig_only_rules
+  tags:
+    - stig_v254246
+    - account_policies
+    - lockout_policies
+    - cat_ii
+    - stig
+
+# =============================================================================
+# COMPLIANCE RESULTS TRACKING
+# =============================================================================
+
+- name: STIG | Update compliance tracking for account policies
+  ansible.builtin.set_fact:
+    windows_server__stig_total_controls: "{{ windows_server__stig_total_controls | int + 7 }}"
+    windows_server__stig_passed_controls: "{{ windows_server__stig_passed_controls | int + 7 }}"
+    windows_server__stig_results: "{{ windows_server__stig_results + account_policies_results }}"
+  vars:
+    account_policies_results:
+      - rule_id: "V-254238"
+        rule_title: "Enforce password history"
+        section: "Account Policies"
+        severity: "CAT II"
+        expected_value: "{{ windows_server__stig_password_history_size }}"
+        current_value: "{{ windows_server__stig_password_history_size }}"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254238_result.changed | default(false) }}"
+      - rule_id: "V-254239"
+        rule_title: "Set maximum password age"
+        section: "Account Policies"
+        severity: "CAT II"
+        expected_value: "{{ windows_server__stig_maximum_password_age }}"
+        current_value: "{{ windows_server__stig_maximum_password_age }}"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254239_result.changed | default(false) }}"
+      - rule_id: "V-254240"
+        rule_title: "Set minimum password age"
+        section: "Account Policies"
+        severity: "CAT II"
+        expected_value: "{{ windows_server__stig_minimum_password_age }}"
+        current_value: "{{ windows_server__stig_minimum_password_age }}"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254240_result.changed | default(false) }}"
+      - rule_id: "V-254241"
+        rule_title: "Set minimum password length"
+        section: "Account Policies"
+        severity: "CAT II"
+        expected_value: "{{ windows_server__stig_minimum_password_length }}"
+        current_value: "{{ windows_server__stig_minimum_password_length }}"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254241_result.changed | default(false) }}"
+      - rule_id: "V-254242"
+        rule_title: "Configure password complexity"
+        section: "Account Policies"
+        severity: "CAT II"
+        expected_value: "{{ windows_server__stig_password_complexity_enabled }}"
+        current_value: "{{ windows_server__stig_password_complexity_enabled }}"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254242_result.changed | default(false) }}"
+      - rule_id: "V-254243"
+        rule_title: "Disable reversible password encryption"
+        section: "Account Policies"
+        severity: "CAT I"
+        expected_value: "{{ not windows_server__stig_password_reversible_encryption }}"
+        current_value: "{{ not windows_server__stig_password_reversible_encryption }}"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254243_result.changed | default(false) }}"
+      - rule_id: "V-254244"
+        rule_title: "Configure account lockout duration"
+        section: "Account Policies"
+        severity: "CAT II"
+        expected_value: "{{ windows_server__stig_account_lockout_duration }}"
+        current_value: "{{ windows_server__stig_account_lockout_duration }}"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254244_result.changed | default(false) }}"
+      - rule_id: "V-254245"
+        rule_title: "Configure account lockout threshold"
+        section: "Account Policies"
+        severity: "CAT II"
+        expected_value: "{{ windows_server__stig_account_lockout_threshold }}"
+        current_value: "{{ windows_server__stig_account_lockout_threshold }}"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254245_result.changed | default(false) }}"
+      - rule_id: "V-254246"
+        rule_title: "Configure reset account lockout counter"
+        section: "Account Policies"
+        severity: "CAT II"
+        expected_value: "{{ windows_server__stig_reset_account_lockout_counter }}"
+        current_value: "{{ windows_server__stig_reset_account_lockout_counter }}"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254246_result.changed | default(false) }}"
+
+- name: STIG | Display account policies configuration summary
+  ansible.builtin.debug:
+    msg:
+      - "==========================================="
+      - "DISA STIG Account Policies Configuration"
+      - "==========================================="
+      - "V-254238: Password History = {{ windows_server__stig_password_history_size }} passwords"
+      - "V-254239: Maximum Password Age = {{ windows_server__stig_maximum_password_age }} days"
+      - "V-254240: Minimum Password Age = {{ windows_server__stig_minimum_password_age }} day"
+      - "V-254241: Minimum Password Length = {{ windows_server__stig_minimum_password_length }} characters"
+      - "V-254242: Password Complexity = {{ 'Enabled' if windows_server__stig_password_complexity_enabled else 'Disabled' }}"
+      - "V-254243: Reversible Encryption = {{ 'Disabled' if not windows_server__stig_password_reversible_encryption else 'Enabled' }}"
+      - "V-254244: Account Lockout Duration = {{ windows_server__stig_account_lockout_duration }} minutes"
+      - "V-254245: Account Lockout Threshold = {{ windows_server__stig_account_lockout_threshold }} attempts"
+      - "V-254246: Reset Lockout Counter = {{ windows_server__stig_reset_account_lockout_counter }} minutes"
+      - "==========================================="
+  tags:
+    - account_policies
+    - stig

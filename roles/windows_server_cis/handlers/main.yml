@@ -1,0 +1,29 @@
+---
+# CIS Windows Server Compliance Role - Handlers
+# Manages system reboots and service restarts required for policy changes
+
+- name: windows_server_cis_reboot_required
+  ansible.windows.win_reboot:
+    reboot_timeout: 1200  # 20 minutes
+    pre_reboot_delay: 10
+    post_reboot_delay: 30
+    test_command: 'Get-Service -Name Winlogon -ErrorAction SilentlyContinue'
+  when: 
+    - windows_server__cis_auto_reboot | default(false) | bool
+    - not ansible_check_mode
+  notify: windows_server_cis_verify_reboot
+
+- name: windows_server_cis_verify_reboot
+  ansible.windows.win_shell: |
+    Get-ComputerInfo | Select-Object TotalPhysicalMemory, CsProcessors
+  register: windows_server_cis_post_reboot_info
+  changed_when: false
+
+- name: windows_server_cis_restart_service
+  ansible.windows.win_service:
+    name: "{{ service_name }}"
+    state: restarted
+  vars:
+    service_name: "{{ item }}"
+  loop: "{{ services_to_restart | default([]) }}"
+  when: not ansible_check_mode

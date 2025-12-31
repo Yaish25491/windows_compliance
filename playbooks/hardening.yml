@@ -1,0 +1,19 @@
+---
+# Playbook for Story 1: Hardening Systems at Scale
+# Apply DISA STIG baseline to Windows servers
+
+- name: Apply Windows Server DISA STIG hardening
+  hosts: windows
+  gather_facts: true
+  vars:
+    stig_apply_fixes: true
+    stig_check_mode: false
+    stig_baseline: "windows_server_2022"
+    stig_generate_report: true
+    stig_report_format: "html"
+    stig_report_path: "/tmp/stig_hardening_report"
+
+  tasks:
+    - name: Apply DISA STIG hardening role 
+      include_role:
+        name: ansible.windows_compliance.windows_server_stig

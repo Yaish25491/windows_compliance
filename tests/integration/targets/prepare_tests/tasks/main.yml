@@ -1,0 +1,17 @@
+---
+- name: Create test base directory
+  ansible.windows.win_file:
+    path: "{{ test_base_directory }}"
+    state: directory
+
+- name: Generate unique test ID
+  ansible.builtin.set_fact:
+    unique_test_id: "test-{{ lookup('password', '/dev/null chars=ascii_letters,digits length=6') | lower }}"
+
+- name: Display test configuration
+  ansible.builtin.debug:
+    msg: 
+      - "Test ID: {{ unique_test_id }}"
+      - "Test base directory: {{ test_base_directory }}"
+      - "Target host: {{ ansible_host | default('localhost') }}"
+      - "Connection type: {{ ansible_connection }}"

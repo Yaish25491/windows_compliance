@@ -1,0 +1,9 @@
+---
+# CIS Section 17.9: Event Log - Test Stub
+
+- name: CIS 17.9  < /dev/null |  INFO | Event log placeholder
+  ansible.builtin.debug:
+    msg: "Event log configuration - placeholder for testing"
+  tags:
+    - event_log
+    - section_17

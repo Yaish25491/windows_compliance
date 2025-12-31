@@ -1,0 +1,6 @@
+---
+test_stig_output_dir: "{{ test_base_directory }}\\stig_{{ unique_test_id }}"
+test_stig_report_name: "STIG Test Report {{ unique_test_id }}"
+test_stig_check_report_filename: "stig_check_report_{{ unique_test_id }}.json"
+test_stig_apply_report_filename: "stig_apply_report_{{ unique_test_id }}.json"
+test_stig_html_report_filename: "stig_report_{{ unique_test_id }}.html"

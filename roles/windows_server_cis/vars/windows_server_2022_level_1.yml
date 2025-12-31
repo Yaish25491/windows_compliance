@@ -1,0 +1,132 @@
+---
+# Windows Server 2022 CIS Level 1 specific variables
+
+# Override default settings for Windows Server 2022 Level 1 specific requirements
+windows_server_cis_version: "2022"
+windows_server_cis_benchmark_version: "v1.0.0"  # CIS Microsoft Windows Server 2022 Benchmark v1.0.0
+windows_server_cis_current_level: "level_1"
+
+# Windows Server 2022 CIS Level 1 supported controls
+windows_server_cis_level_1_controls:
+  # 1.1 Password Policy
+  - "1.1.1"  # Enforce password history
+  - "1.1.2"  # Maximum password age
+  - "1.1.3"  # Minimum password age
+  - "1.1.4"  # Minimum password length
+  - "1.1.5"  # Password must meet complexity requirements
+  - "1.1.6"  # Store passwords using reversible encryption
+  
+  # 1.2 Account Lockout Policy
+  - "1.2.1"  # Account lockout duration
+  - "1.2.2"  # Account lockout threshold
+  - "1.2.3"  # Reset account lockout counter
+  
+  # 2.2 User Rights Assignment (Level 1 only)
+  - "2.2.1"   # Access this computer from the network
+  - "2.2.2"   # Act as part of the operating system
+  - "2.2.3"   # Add workstations to domain
+  - "2.2.4"   # Adjust memory quotas for a process
+  - "2.2.5"   # Allow log on locally
+  - "2.2.6"   # Allow log on through Remote Desktop Services
+  - "2.2.7"   # Back up files and directories
+  - "2.2.8"   # Create symbolic links
+  - "2.2.9"   # Debug programs
+  - "2.2.10"  # Deny access to this computer from the network
+  - "2.2.11"  # Deny log on as a batch job
+  - "2.2.12"  # Deny log on as a service
+  - "2.2.13"  # Deny log on locally
+  - "2.2.14"  # Deny log on through Remote Desktop Services
+  
+  # 2.3 Security Options (Level 1 selections)
+  - "2.3.1.1"  # Accounts Administrator account status
+  - "2.3.1.2"  # Accounts Guest account status
+  - "2.3.1.3"  # Accounts Limit local account use of blank passwords
+  - "2.3.1.4"  # Accounts Rename administrator account
+  - "2.3.1.5"  # Accounts Rename guest account
+  - "2.3.2.1"  # Audit Force audit policy subcategory settings
+  - "2.3.4.1"  # Devices Prevent users from installing printer drivers
+  - "2.3.7.1"  # Interactive logon Do not display last user name
+  - "2.3.7.2"  # Interactive logon Do not require CTRL+ALT+DEL
+  - "2.3.7.3"  # Interactive logon Machine inactivity limit
+  - "2.3.7.4"  # Interactive logon Message text for users attempting to log on
+  - "2.3.7.5"  # Interactive logon Message title for users attempting to log on
+  - "2.3.11.1" # Network security Allow Local System to use computer identity
+  - "2.3.11.2" # Network security Allow LocalSystem NULL session fallback
+  - "2.3.11.3" # Network Security Allow PKU2U authentication requests
+  
+  # 5.x System Services (Level 1)
+  - "5.1"  # General service hardening
+  - "5.2"  # Computer Browser
+  - "5.3"  # IIS Admin Service
+  - "5.4"  # Infrared monitor service
+  - "5.5"  # Internet Connection Sharing (ICS)
+  - "5.7"  # Windows Error Reporting Service
+  - "5.8"  # Windows Event Collector
+  
+  # 17.x Advanced Audit Policy Configuration (Level 1)
+  - "17.1.1"  # Audit Credential Validation
+  - "17.2.1"  # Audit Application Group Management
+  - "17.2.2"  # Audit Computer Account Management
+  - "17.2.3"  # Audit Distribution Group Management
+  - "17.2.4"  # Audit Other Account Management Events
+  - "17.2.5"  # Audit Security Group Management
+  - "17.2.6"  # Audit User Account Management
+  - "17.3.1"  # Audit PNP Activity
+  - "17.3.2"  # Audit Process Creation
+  - "17.5.1"  # Audit Account Lockout
+  - "17.5.2"  # Audit Group Membership
+  - "17.5.3"  # Audit Logoff
+  - "17.5.4"  # Audit Logon
+  - "17.9.1"  # Windows Logs Application log size
+  - "17.9.2"  # Windows Logs Security log size
+  - "17.9.3"  # Windows Logs System log size
+  
+  # 18.x Administrative Templates (Level 1 selections)
+  - "18.1.1.1"    # Turn off help experience improvement program
+  - "18.1.1.2"    # Turn off the Windows Ink workspace
+  - "18.4.3.1"    # MSS (AutoAdminLogon) Enable Automatic Logon
+  - "18.4.3.2"    # MSS (DisableIPSourceRouting) IP source routing protection level
+  - "18.4.3.3"    # MSS (EnableICMPRedirect) Allow ICMP redirects to override OSPF
+  - "18.4.3.5"    # MSS (NoDefaultExempt) Enable NoDefaultExempt
+  - "18.4.3.6"    # MSS (PerformRouterDiscovery) Allow IRDP to detect and configure Default Gateway
+  - "18.4.3.7"    # MSS (SafeDllSearchMode) Enable Safe DLL search mode
+  - "18.5.4.1"    # Turn off multicast name resolution
+  - "18.5.8.1"    # Enable insecure guest logons
+  - "18.5.19.2.1" # Turn off Microsoft Peer-to-Peer Networking Services
+
+# Level 1 specific variable overrides (more permissive than Level 2)
+windows_server_cis_level_1_overrides:
+  # More lenient password age for Level 1
+  maximum_password_age: 365  # Level 1 allows up to 365 days vs Level 2's stricter requirements
+  
+  # Level 1 allows some services that Level 2 disables
+  services_exceptions:
+    - "WinRM"  # May be needed for management in Level 1 environments
+
+# Control categories specific to Level 1
+windows_server_cis_level_1_categories:
+  - "password_policies"
+  - "account_lockout"
+  - "user_rights_assignment"
+  - "security_options"
+  - "advanced_audit_policies"
+  - "event_log"
+  - "system_services"
+  - "registry_settings"
+
+# Level 1 category mappings and rule ranges
+windows_server_cis_level_1_category_ranges:
+  password_policies: ["1.1.1", "1.1.6"]
+  account_lockout: ["1.2.1", "1.2.3"]
+  user_rights_assignment: ["2.2.1", "2.2.14"]
+  security_options: ["2.3.1.1", "2.3.11.3"]
+  system_services: ["5.1", "5.8"]
+  advanced_audit_policies: ["17.1.1", "17.9.3"]
+  registry_settings: ["18.1.1.1", "18.5.19.2.1"]
+
+# Level 1 specific recommendations
+windows_server_cis_level_1_notes:
+  - "Level 1 configurations are intended to be practical and prudent"
+  - "Should provide clear security benefits and not inhibit system utility"
+  - "Appropriate for most organizations as a baseline security posture"
+  - "May require some organizational changes to implement successfully"

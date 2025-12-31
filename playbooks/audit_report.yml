@@ -1,0 +1,44 @@
+---
+# Playbook for Story 3: Generating Audit-Ready Reports
+# Generate detailed compliance reports for auditing
+
+- name: Generate audit-ready compliance report
+  hosts: "{{ target_server | default('windows') }}"
+  gather_facts: true
+  vars:
+    # Report generation for both STIG and CIS
+    generate_stig_report: "{{ stig_audit | default(true) }}"
+    generate_cis_report: "{{ cis_audit | default(true) }}"
+
+    # STIG report settings
+    stig_check_mode: true
+    stig_apply_fixes: false
+    stig_generate_report: true
+    stig_report_format: "html"
+    stig_report_path: "/tmp/stig_audit_report"
+
+    # CIS report settings
+    cis_check_mode: true
+    cis_apply_fixes: false
+    cis_generate_report: true
+    cis_report_format: "html"
+    cis_report_path: "/tmp/cis_audit_report"
+
+  tasks:
+    - name: Generate STIG compliance audit report
+      include_role:
+        name: ansible.windows_compliance.windows_server_stig
+      when: generate_stig_report
+
+    - name: Generate CIS compliance audit report
+      include_role:
+        name: ansible.windows_compliance.windows_server_cis
+      when: generate_cis_report
+
+    - name: Display audit report summary
+      debug:
+        msg:
+          - "Audit-ready compliance reports generated"
+          - "STIG Report: {{ stig_report_path if generate_stig_report else 'Not generated' }}"
+          - "CIS Report: {{ cis_report_path if generate_cis_report else 'Not generated' }}"
+          - "Reports include detailed control status with expected vs actual values"

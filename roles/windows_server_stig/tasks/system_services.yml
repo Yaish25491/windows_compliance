@@ -1,0 +1,41 @@
+---
+# =============================================================================
+# DISA STIG V-254401 through V-254450 - System Services
+# Windows Service Security Configuration for Government Compliance
+# =============================================================================
+
+- name: STIG | SERVICES | Display system services implementation banner
+  ansible.builtin.debug:
+    msg:
+      - "==========================================="
+      - "DISA STIG System Services Configuration"
+      - "==========================================="
+      - "Implementing STIG V-254401 through V-254450"
+      - "System service controls for reduced attack surface"
+      - "High-risk services disabled, essential services secured"
+      - "==========================================="
+  tags:
+    - system_services
+    - stig
+
+# =============================================================================
+# IMPORT SYSTEM SERVICES BATCHES
+# =============================================================================
+
+- name: STIG | Apply system services controls (batch 1)
+  ansible.builtin.include_tasks: system_services_batch1.yml
+  tags:
+    - system_services
+    - stig
+
+- name: STIG | Apply system services controls (batch 2)
+  ansible.builtin.include_tasks: system_services_batch2.yml
+  tags:
+    - system_services
+    - stig
+
+- name: STIG | Apply system services controls (batch 3 - final)
+  ansible.builtin.include_tasks: system_services_batch3.yml
+  tags:
+    - system_services
+    - stig

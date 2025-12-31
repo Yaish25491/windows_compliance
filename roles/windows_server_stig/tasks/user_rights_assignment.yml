@@ -1,0 +1,41 @@
+---
+# =============================================================================
+# DISA STIG V-254451 through V-254500 - User Rights Assignment
+# Windows User Rights and Privilege Security Configuration
+# =============================================================================
+
+- name: STIG | USER RIGHTS | Display user rights assignment implementation banner
+  ansible.builtin.debug:
+    msg:
+      - "==========================================="
+      - "DISA STIG User Rights Assignment Configuration"
+      - "==========================================="
+      - "Implementing STIG V-254451 through V-254500"
+      - "User rights and privilege security controls"
+      - "Government-grade access control enforcement"
+      - "==========================================="
+  tags:
+    - user_rights
+    - stig
+
+# =============================================================================
+# IMPORT USER RIGHTS ASSIGNMENT BATCHES
+# =============================================================================
+
+- name: STIG | Apply user rights assignment controls (batch 1)
+  ansible.builtin.include_tasks: user_rights_assignment_batch1.yml
+  tags:
+    - user_rights
+    - stig
+
+- name: STIG | Apply user rights assignment controls (batch 2)
+  ansible.builtin.include_tasks: user_rights_assignment_batch2.yml
+  tags:
+    - user_rights
+    - stig
+
+- name: STIG | Apply user rights assignment controls (batch 3 - final)
+  ansible.builtin.include_tasks: user_rights_assignment_batch3.yml
+  tags:
+    - user_rights
+    - stig

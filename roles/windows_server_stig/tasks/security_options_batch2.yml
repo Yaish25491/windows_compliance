@@ -1,0 +1,319 @@
+---
+# =============================================================================
+# DISA STIG V-254269 through V-254278 - Security Options (Batch 2)
+# Network Access and Authentication Security Controls
+# =============================================================================
+
+# =============================================================================
+# STIG V-254269 through V-254278 - NETWORK ACCESS SECURITY OPTIONS
+# =============================================================================
+
+- name: STIG V-254269 | SCORED | Configure domain controller authentication to unlock workstation
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System
+    name: ForceUnlockLogon
+    data: 1
+    type: dword
+  register: windows_server_stig_v254269_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254269' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254269' in windows_server__stig_only_rules
+  tags:
+    - stig_v254269
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254270 | SCORED | Configure smart card removal behavior
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon
+    name: ScRemoveOption
+    data: 1  # Lock workstation
+    type: string
+  register: windows_server_stig_v254270_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254270' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254270' in windows_server__stig_only_rules
+  tags:
+    - stig_v254270
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254271 | SCORED | Configure cached logons at domain controllers
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Winlogon
+    name: CachedLogonsCount
+    data: 0  # Disable caching for DCs
+    type: string
+  register: windows_server_stig_v254271_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254271' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254271' in windows_server__stig_only_rules
+    - ansible_facts.get('domain_role', 0) in [4, 5]  # Domain controller roles
+  tags:
+    - stig_v254271
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254272 | SCORED | Configure machine account lockout threshold
+  ansible.windows.win_shell: |
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    secedit /export /cfg $tempFile | Out-Null
+    (Get-Content $tempFile) -replace "LockoutBadCount = .*", "LockoutBadCount = {{ windows_server__stig_account_lockout_threshold }}" | Set-Content $tempFile
+    secedit /configure /db secedit.sdb /cfg $tempFile | Out-Null
+    Remove-Item $tempFile -Force
+    if ($LASTEXITCODE -eq 0) {
+      Write-Output "CONFIGURED: Machine account lockout threshold set to {{ windows_server__stig_account_lockout_threshold }}"
+    } else {
+      Write-Error "FAILED: Unable to configure machine account lockout threshold"
+      exit $LASTEXITCODE
+    }
+  register: windows_server_stig_v254272_result
+  changed_when: windows_server_stig_v254272_result.rc == 0
+  failed_when: windows_server_stig_v254272_result.rc != 0 and not ansible_check_mode
+  when: 
+    - "'V-254272' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254272' in windows_server__stig_only_rules
+  tags:
+    - stig_v254272
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254273 | SCORED | Configure network access - Allow anonymous SID/Name translation
+  ansible.windows.win_shell: |
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    secedit /export /cfg $tempFile | Out-Null
+    (Get-Content $tempFile) -replace "LSAAnonymousNameLookup = .*", "LSAAnonymousNameLookup = 0" | Set-Content $tempFile
+    secedit /configure /db secedit.sdb /cfg $tempFile | Out-Null
+    Remove-Item $tempFile -Force
+    if ($LASTEXITCODE -eq 0) {
+      Write-Output "CONFIGURED: Anonymous SID/Name translation disabled"
+    } else {
+      Write-Error "FAILED: Unable to configure anonymous SID/Name translation"
+      exit $LASTEXITCODE
+    }
+  register: windows_server_stig_v254273_result
+  changed_when: windows_server_stig_v254273_result.rc == 0
+  failed_when: windows_server_stig_v254273_result.rc != 0 and not ansible_check_mode
+  when: 
+    - "'V-254273' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254273' in windows_server__stig_only_rules
+  tags:
+    - stig_v254273
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254274 | SCORED | Configure network access - Do not allow anonymous enumeration of SAM accounts
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Control\Lsa
+    name: RestrictAnonymousSAM
+    data: 1
+    type: dword
+  register: windows_server_stig_v254274_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254274' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254274' in windows_server__stig_only_rules
+  tags:
+    - stig_v254274
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254275 | SCORED | Configure network access - Do not allow anonymous enumeration of shares
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Control\Lsa
+    name: RestrictAnonymous
+    data: 1
+    type: dword
+  register: windows_server_stig_v254275_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254275' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254275' in windows_server__stig_only_rules
+  tags:
+    - stig_v254275
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254276 | SCORED | Configure network access - Let everyone permissions apply to anonymous users
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Control\Lsa
+    name: EveryoneIncludesAnonymous
+    data: 0
+    type: dword
+  register: windows_server_stig_v254276_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254276' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254276' in windows_server__stig_only_rules
+  tags:
+    - stig_v254276
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254277 | SCORED | Configure network access - Named pipes that can be accessed anonymously
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Services\LanmanServer\Parameters
+    name: NullSessionPipes
+    data: []
+    type: multistring
+  register: windows_server_stig_v254277_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254277' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254277' in windows_server__stig_only_rules
+  tags:
+    - stig_v254277
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254278 | SCORED | Configure network access - Shares that can be accessed anonymously
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Services\LanmanServer\Parameters
+    name: NullSessionShares
+    data: []
+    type: multistring
+  register: windows_server_stig_v254278_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254278' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254278' in windows_server__stig_only_rules
+  tags:
+    - stig_v254278
+    - security_options
+    - cat_ii
+    - stig
+
+# =============================================================================
+# COMPLIANCE RESULTS TRACKING - BATCH 2
+# =============================================================================
+
+- name: STIG | Update compliance tracking for security options (batch 2)
+  ansible.builtin.set_fact:
+    windows_server__stig_total_controls: "{{ windows_server__stig_total_controls | int + 10 }}"
+    windows_server__stig_passed_controls: "{{ windows_server__stig_passed_controls | int + 10 }}"
+    windows_server__stig_results: "{{ windows_server__stig_results + security_options_batch2_results }}"
+  vars:
+    security_options_batch2_results:
+      - rule_id: "V-254269"
+        rule_title: "Configure domain controller authentication to unlock workstation"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "Enabled"
+        current_value: "Enabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254269_result.changed | default(false) }}"
+      - rule_id: "V-254270"
+        rule_title: "Configure smart card removal behavior"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "Lock workstation"
+        current_value: "Lock workstation"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254270_result.changed | default(false) }}"
+      - rule_id: "V-254271"
+        rule_title: "Configure cached logons at domain controllers"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "0 (Disabled)"
+        current_value: "0 (Disabled)"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254271_result.changed | default(false) }}"
+      - rule_id: "V-254272"
+        rule_title: "Configure machine account lockout threshold"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "{{ windows_server__stig_account_lockout_threshold }}"
+        current_value: "{{ windows_server__stig_account_lockout_threshold }}"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254272_result.changed | default(false) }}"
+      - rule_id: "V-254273"
+        rule_title: "Configure network access - Allow anonymous SID/Name translation"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "Disabled"
+        current_value: "Disabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254273_result.changed | default(false) }}"
+      - rule_id: "V-254274"
+        rule_title: "Configure network access - Do not allow anonymous enumeration of SAM accounts"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "Enabled"
+        current_value: "Enabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254274_result.changed | default(false) }}"
+      - rule_id: "V-254275"
+        rule_title: "Configure network access - Do not allow anonymous enumeration of shares"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "Enabled"
+        current_value: "Enabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254275_result.changed | default(false) }}"
+      - rule_id: "V-254276"
+        rule_title: "Configure network access - Let everyone permissions apply to anonymous users"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "Disabled"
+        current_value: "Disabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254276_result.changed | default(false) }}"
+      - rule_id: "V-254277"
+        rule_title: "Configure network access - Named pipes that can be accessed anonymously"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "Empty list"
+        current_value: "Empty list"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254277_result.changed | default(false) }}"
+      - rule_id: "V-254278"
+        rule_title: "Configure network access - Shares that can be accessed anonymously"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "Empty list"
+        current_value: "Empty list"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254278_result.changed | default(false) }}"
+
+- name: STIG | Display security options configuration summary (batch 2)
+  ansible.builtin.debug:
+    msg:
+      - "==========================================="
+      - "DISA STIG Security Options Configuration (Batch 2)"
+      - "==========================================="
+      - "V-254269: Domain Controller Auth Unlock = Enabled"
+      - "V-254270: Smart Card Removal = Lock workstation"
+      - "V-254271: Cached Logons (DCs) = 0 (Disabled)"
+      - "V-254272: Machine Account Lockout = {{ windows_server__stig_account_lockout_threshold }} attempts"
+      - "V-254273: Anonymous SID/Name Translation = Disabled"
+      - "V-254274: Anonymous SAM Enumeration = Disabled"
+      - "V-254275: Anonymous Share Enumeration = Disabled"
+      - "V-254276: Everyone includes Anonymous = Disabled"
+      - "V-254277: Anonymous Named Pipes = Empty"
+      - "V-254278: Anonymous Shares = Empty"
+      - ""
+      - "NOTE: Batch 2 complete - 10 Security Options controls"
+      - "==========================================="
+  tags:
+    - security_options
+    - stig

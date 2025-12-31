@@ -1,0 +1,30 @@
+---
+# See https://docs.ansible.com/ansible/latest/dev_guide/collections_galaxy_meta.html
+
+namespace: ansible
+name: windows_compliance
+version: 0.1.0
+readme: README.md
+authors:
+  - Red Hat Ansible Content Team
+description: |
+  Ansible collection for Windows security compliance automation.
+  Provides roles and playbooks for applying, validating, and reporting
+  on DISA STIG and CIS benchmark configurations for Windows servers.
+license_file: LICENSE
+tags:
+  - windows
+  - security
+  - compliance
+  - stig
+  - cis
+  - hardening
+  - audit
+repository: https://github.com/ansible-collections/ansible.windows_compliance
+documentation: https://docs.ansible.com/ansible/devel/collections/ansible/windows_compliance
+homepage: https://github.com/ansible-collections/ansible.windows_compliance
+issues: https://github.com/ansible-collections/ansible.windows_compliance/issues
+build_ignore:
+  # https://docs.ansible.com/ansible/devel/dev_guide/developing_collections_distributing.html#ignoring-files-and-folders
+  - .gitignore
+  - changelogs/.plugin-cache.yaml

@@ -1,0 +1,110 @@
+---
+# Windows Server 2022 specific STIG variables
+
+# Override default settings for Windows Server 2022 specific requirements
+windows_server_stig_version: "2022"
+windows_server_stig_baseline_version: "V1R1"  # Version 1 Release 1
+
+# Windows Server 2022 specific STIG IDs and mappings
+windows_server_stig_supported_controls:
+  - "V-254238"  # Password history
+  - "V-254239"  # Maximum password age
+  - "V-254240"  # Minimum password age
+  - "V-254241"  # Minimum password length
+  - "V-254242"  # Password complexity
+  - "V-254243"  # Reversible password encryption
+  - "V-254244"  # Account lockout duration
+  - "V-254245"  # Account lockout threshold
+  - "V-254246"  # Reset account lockout counter
+  - "V-254247"  # Audit account logon events
+  - "V-254248"  # Audit account management
+  - "V-254249"  # Audit detailed tracking
+  - "V-254250"  # Audit directory service access
+  - "V-254251"  # Audit logon events
+  - "V-254252"  # Audit object access
+  - "V-254253"  # Audit policy change
+  - "V-254254"  # Audit privilege use
+  - "V-254255"  # Audit process tracking
+  - "V-254256"  # Audit system events
+  - "V-254257"  # Act as part of operating system
+  - "V-254258"  # Add workstations to domain
+  - "V-254259"  # Adjust memory quotas
+  - "V-254260"  # Allow log on locally
+  - "V-254261"  # Back up files and directories
+  - "V-254262"  # Change system time
+  - "V-254263"  # Create pagefile
+  - "V-254264"  # Debug programs
+  - "V-254265"  # Deny log on as batch job
+  - "V-254266"  # Deny log on as service
+  - "V-254267"  # Deny log on locally
+  - "V-254268"  # Deny log on through RDP
+  - "V-254269"  # Interactive logon inactivity limit
+  - "V-254270"  # Interactive logon message title
+  - "V-254271"  # Interactive logon message text
+  - "V-254272"  # LAN Manager authentication level
+  - "V-254273"  # LDAP client signing
+  - "V-254274"  # NTLM minimum session security clients
+  - "V-254275"  # NTLM minimum session security servers
+  - "V-254276"  # Shutdown without logon
+  - "V-254277"  # AutoPlay for all drives
+  - "V-254278"  # AutoPlay for non-volume devices
+  - "V-254279"  # Remote Assistance
+  - "V-254280"  # Solicited Remote Assistance
+  - "V-254281"  # Windows Error Reporting
+  - "V-254282"  # Windows Error Reporting additional data
+  - "V-254283"  # Windows Installer elevated privileges
+  - "V-254284"  # PowerShell v2
+  - "V-254285"  # Unnecessary services
+  - "V-254286"  # Fax service
+  - "V-254287"  # FTP Publishing Service
+  - "V-254288"  # IIS Admin Service
+  - "V-254289"  # Microsoft iSCSI Initiator Service
+  - "V-254290"  # Telnet service
+  - "V-254291"  # Simple TCP/IP Services
+  - "V-254292"  # Print Spooler service
+
+# Windows Server 2022 specific service names
+windows_server_stig_2022_services_mapping:
+  "Fax": "Fax"
+  "FTPSVC": "Microsoft FTP Service"
+  "IISADMIN": "IIS Admin Service"
+  "MSiSCSI": "Microsoft iSCSI Initiator Service"
+  "tlntsvr": "Telnet"
+  "Simple TCP/IP Services": "Simple TCP/IP Services"
+  "Print Spooler": "Spooler"
+
+# Specific registry paths for Windows Server 2022
+windows_server_stig_2022_registry_paths:
+  autoplay_drives: "HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Policies\\Explorer"
+  autoplay_devices: "HKLM:\\Software\\Policies\\Microsoft\\Windows\\Explorer"
+  remote_assistance: "HKLM:\\System\\CurrentControlSet\\Control\\Remote Assistance"
+  error_reporting: "HKLM:\\Software\\Policies\\Microsoft\\Windows\\Windows Error Reporting"
+  installer_elevated: "HKLM:\\Software\\Policies\\Microsoft\\Windows\\Installer"
+  powershell_v2: "HKLM:\\Software\\Policies\\Microsoft\\Windows\\PowerShell\\v1"
+
+# Windows Server 2022 specific security policy mappings
+windows_server_stig_2022_security_policies:
+  password_history: "PasswordHistorySize"
+  max_password_age: "MaximumPasswordAge"
+  min_password_age: "MinimumPasswordAge"
+  min_password_length: "MinimumPasswordLength"
+  password_complexity: "PasswordComplexity"
+  reversible_encryption: "ClearTextPassword"
+  lockout_duration: "LockoutDuration"
+  lockout_threshold: "LockoutBadCount"
+  lockout_counter_reset: "ResetLockoutCount"
+
+# Category severity mappings for Windows Server 2022
+windows_server_stig_2022_severity_mapping:
+  cat1: "HIGH"      # Category I - High severity
+  cat2: "MEDIUM"    # Category II - Medium severity  
+  cat3: "LOW"       # Category III - Low severity
+
+# Control categories and their associated rule ranges
+windows_server_stig_2022_category_ranges:
+  account_policies: ["V-254238", "V-254246"]
+  audit_policies: ["V-254247", "V-254256"] 
+  user_rights: ["V-254257", "V-254268"]
+  security_options: ["V-254269", "V-254276"]
+  registry_settings: ["V-254277", "V-254284"]
+  system_services: ["V-254285", "V-254292"]

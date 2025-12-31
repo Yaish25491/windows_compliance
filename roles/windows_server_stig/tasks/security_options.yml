@@ -1,0 +1,65 @@
+---
+# =============================================================================
+# DISA STIG V-254259 through V-254350 - Security Options
+# Local Security Policy Settings for Government Compliance
+# =============================================================================
+
+- name: STIG | SECURITY OPTIONS | Display security options implementation banner
+  ansible.builtin.debug:
+    msg:
+      - "==========================================="
+      - "DISA STIG Security Options Configuration"
+      - "==========================================="
+      - "Implementing STIG V-254259 through V-254350"
+      - "Local security policy and system hardening controls"
+      - "UAC, network security, cryptography, and access controls"
+      - "==========================================="
+  tags:
+    - security_options
+    - stig
+
+# =============================================================================
+# IMPORT SECURITY OPTIONS BATCHES
+# =============================================================================
+
+- name: STIG | Apply security options controls (batch 1)
+  ansible.builtin.include_tasks: security_options_batch1.yml
+  tags:
+    - security_options
+    - stig
+
+- name: STIG | Apply security options controls (batch 2)
+  ansible.builtin.include_tasks: security_options_batch2.yml
+  tags:
+    - security_options
+    - stig
+
+- name: STIG | Apply security options controls (batch 3)
+  ansible.builtin.include_tasks: security_options_batch3.yml
+  tags:
+    - security_options
+    - stig
+
+- name: STIG | Apply security options controls (batch 4)
+  ansible.builtin.include_tasks: security_options_batch4.yml
+  tags:
+    - security_options
+    - stig
+
+- name: STIG | Apply security options controls (batch 5)
+  ansible.builtin.include_tasks: security_options_batch5.yml
+  tags:
+    - security_options
+    - stig
+
+- name: STIG | Apply security options controls (batch 6)
+  ansible.builtin.include_tasks: security_options_batch6.yml
+  tags:
+    - security_options
+    - stig
+
+- name: STIG | Apply security options controls (batch 7 - final)
+  ansible.builtin.include_tasks: security_options_batch7.yml
+  tags:
+    - security_options
+    - stig

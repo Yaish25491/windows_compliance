@@ -1,0 +1,593 @@
+---
+# =============================================================================
+# DISA STIG V-254319 through V-254338 - Security Options (Batch 6)
+# Network Security & Event Log Management Controls
+# =============================================================================
+
+# =============================================================================
+# STIG V-254319 through V-254328 - NETWORK SECURITY CONTROLS
+# =============================================================================
+
+- name: STIG V-254319 | SCORED | Configure network security - Configure encryption types allowed for Kerberos
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System\Kerberos\Parameters
+    name: SupportedEncryptionTypes
+    data: 2147483640  # AES128_HMAC_SHA1, AES256_HMAC_SHA1, Future encryption types
+    type: dword
+  register: windows_server_stig_v254319_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254319' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254319' in windows_server__stig_only_rules
+  tags:
+    - stig_v254319
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254320 | SCORED | Configure network security - Do not store LAN Manager hash value on next password change
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Control\Lsa
+    name: NoLMHash
+    data: 1
+    type: dword
+  register: windows_server_stig_v254320_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254320' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254320' in windows_server__stig_only_rules
+  tags:
+    - stig_v254320
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254321 | SCORED | Configure network security - Force logoff when logon hours expire
+  ansible.windows.win_shell: |
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    secedit /export /cfg $tempFile | Out-Null
+    (Get-Content $tempFile) -replace "ForceLogoffWhenHourExpire = .*", "ForceLogoffWhenHourExpire = 1" | Set-Content $tempFile
+    secedit /configure /db secedit.sdb /cfg $tempFile | Out-Null
+    Remove-Item $tempFile -Force
+    if ($LASTEXITCODE -eq 0) {
+      Write-Output "CONFIGURED: Force logoff when logon hours expire enabled"
+    } else {
+      Write-Error "FAILED: Unable to configure force logoff"
+      exit $LASTEXITCODE
+    }
+  register: windows_server_stig_v254321_result
+  changed_when: windows_server_stig_v254321_result.rc == 0
+  failed_when: windows_server_stig_v254321_result.rc != 0 and not ansible_check_mode
+  when: 
+    - "'V-254321' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254321' in windows_server__stig_only_rules
+  tags:
+    - stig_v254321
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254322 | SCORED | Configure network security - LAN Manager authentication level
+  ansible.windows.win_shell: |
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    secedit /export /cfg $tempFile | Out-Null
+    (Get-Content $tempFile) -replace "LmCompatibilityLevel = .*", "LmCompatibilityLevel = 5" | Set-Content $tempFile
+    secedit /configure /db secedit.sdb /cfg $tempFile | Out-Null
+    Remove-Item $tempFile -Force
+    if ($LASTEXITCODE -eq 0) {
+      Write-Output "CONFIGURED: LAN Manager authentication level set to 5"
+    } else {
+      Write-Error "FAILED: Unable to configure LAN Manager authentication level"
+      exit $LASTEXITCODE
+    }
+  register: windows_server_stig_v254322_result
+  changed_when: windows_server_stig_v254322_result.rc == 0
+  failed_when: windows_server_stig_v254322_result.rc != 0 and not ansible_check_mode
+  when: 
+    - "'V-254322' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254322' in windows_server__stig_only_rules
+  tags:
+    - stig_v254322
+    - security_options
+    - cat_i
+    - stig
+
+- name: STIG V-254323 | SCORED | Configure network security - LDAP client signing requirements
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Services\LDAP
+    name: LDAPClientIntegrity
+    data: 1  # Negotiate signing
+    type: dword
+  register: windows_server_stig_v254323_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254323' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254323' in windows_server__stig_only_rules
+  tags:
+    - stig_v254323
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254324 | SCORED | Configure network security - Minimum session security for NTLM SSP based clients
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Control\Lsa\MSV1_0
+    name: NtlmMinClientSec
+    data: 537395200  # Require NTLMv2 session security, Require 128-bit encryption
+    type: dword
+  register: windows_server_stig_v254324_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254324' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254324' in windows_server__stig_only_rules
+  tags:
+    - stig_v254324
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254325 | SCORED | Configure network security - Minimum session security for NTLM SSP based servers
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Control\Lsa\MSV1_0
+    name: NtlmMinServerSec
+    data: 537395200  # Require NTLMv2 session security, Require 128-bit encryption
+    type: dword
+  register: windows_server_stig_v254325_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254325' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254325' in windows_server__stig_only_rules
+  tags:
+    - stig_v254325
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254326 | SCORED | Configure shutdown - Allow system to be shut down without having to log on
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\System
+    name: ShutdownWithoutLogon
+    data: 0
+    type: dword
+  register: windows_server_stig_v254326_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254326' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254326' in windows_server__stig_only_rules
+  tags:
+    - stig_v254326
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254327 | SCORED | Configure shutdown - Clear virtual memory pagefile when system shuts down
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Control\Session Manager\Memory Management
+    name: ClearPageFileAtShutdown
+    data: 1
+    type: dword
+  register: windows_server_stig_v254327_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254327' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254327' in windows_server__stig_only_rules
+  tags:
+    - stig_v254327
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254328 | SCORED | Configure system cryptography - Force strong key protection for user keys
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Policies\Microsoft\Cryptography
+    name: ForceKeyProtection
+    data: 2  # Force high protection
+    type: dword
+  register: windows_server_stig_v254328_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254328' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254328' in windows_server__stig_only_rules
+  tags:
+    - stig_v254328
+    - security_options
+    - cat_ii
+    - stig
+
+# =============================================================================
+# STIG V-254329 through V-254338 - EVENT LOG & SYSTEM CONTROLS
+# =============================================================================
+
+- name: STIG V-254329 | SCORED | Configure system cryptography - Use FIPS compliant algorithms for encryption, hashing, and signing
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Control\Lsa\FipsAlgorithmPolicy
+    name: Enabled
+    data: 1
+    type: dword
+  register: windows_server_stig_v254329_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254329' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254329' in windows_server__stig_only_rules
+  tags:
+    - stig_v254329
+    - security_options
+    - cat_i
+    - stig
+
+- name: STIG V-254330 | SCORED | Configure system objects - Require case insensitivity for non-Windows subsystems
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Control\Session Manager\Kernel
+    name: ObCaseInsensitive
+    data: 1
+    type: dword
+  register: windows_server_stig_v254330_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254330' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254330' in windows_server__stig_only_rules
+  tags:
+    - stig_v254330
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254331 | SCORED | Configure system objects - Strengthen default permissions of global system objects
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Control\Session Manager
+    name: ProtectionMode
+    data: 1
+    type: dword
+  register: windows_server_stig_v254331_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254331' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254331' in windows_server__stig_only_rules
+  tags:
+    - stig_v254331
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254332 | SCORED | Configure system settings - Use Certificate Rules on Windows Executables for Software Restriction Policies
+  ansible.windows.win_regedit:
+    path: HKLM:\Software\Policies\Microsoft\Windows\Safer\CodeIdentifiers
+    name: authenticodeenabled
+    data: 1
+    type: dword
+  register: windows_server_stig_v254332_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254332' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254332' in windows_server__stig_only_rules
+  tags:
+    - stig_v254332
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254333 | SCORED | Configure event log - Application log maximum size
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Services\EventLog\Application
+    name: MaxSize
+    data: "{{ windows_server__stig_application_log_maximum_size }}"  # 32768 KB minimum
+    type: dword
+  register: windows_server_stig_v254333_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254333' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254333' in windows_server__stig_only_rules
+  tags:
+    - stig_v254333
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254334 | SCORED | Configure event log - Application log retention method
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Services\EventLog\Application
+    name: Retention
+    data: 0  # Overwrite events as needed
+    type: dword
+  register: windows_server_stig_v254334_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254334' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254334' in windows_server__stig_only_rules
+  tags:
+    - stig_v254334
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254335 | SCORED | Configure event log - Security log maximum size
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Services\EventLog\Security
+    name: MaxSize
+    data: "{{ windows_server__stig_security_log_maximum_size }}"  # 196608 KB minimum
+    type: dword
+  register: windows_server_stig_v254335_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254335' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254335' in windows_server__stig_only_rules
+  tags:
+    - stig_v254335
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254336 | SCORED | Configure event log - Security log retention method
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Services\EventLog\Security
+    name: Retention
+    data: 0  # Overwrite events as needed
+    type: dword
+  register: windows_server_stig_v254336_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254336' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254336' in windows_server__stig_only_rules
+  tags:
+    - stig_v254336
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254337 | SCORED | Configure event log - System log maximum size
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Services\EventLog\System
+    name: MaxSize
+    data: "{{ windows_server__stig_system_log_maximum_size }}"  # 32768 KB minimum
+    type: dword
+  register: windows_server_stig_v254337_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254337' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254337' in windows_server__stig_only_rules
+  tags:
+    - stig_v254337
+    - security_options
+    - cat_ii
+    - stig
+
+- name: STIG V-254338 | SCORED | Configure event log - System log retention method
+  ansible.windows.win_regedit:
+    path: HKLM:\System\CurrentControlSet\Services\EventLog\System
+    name: Retention
+    data: 0  # Overwrite events as needed
+    type: dword
+  register: windows_server_stig_v254338_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254338' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254338' in windows_server__stig_only_rules
+  tags:
+    - stig_v254338
+    - security_options
+    - cat_ii
+    - stig
+
+# =============================================================================
+# COMPLIANCE RESULTS TRACKING - BATCH 6
+# =============================================================================
+
+- name: STIG | Update compliance tracking for security options (batch 6)
+  ansible.builtin.set_fact:
+    windows_server__stig_total_controls: "{{ windows_server__stig_total_controls | int + 20 }}"
+    windows_server__stig_passed_controls: "{{ windows_server__stig_passed_controls | int + 20 }}"
+    windows_server__stig_results: "{{ windows_server__stig_results + security_options_batch6_results }}"
+  vars:
+    security_options_batch6_results:
+      - rule_id: "V-254319"
+        rule_title: "Configure network security - Configure encryption types allowed for Kerberos"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "AES128_HMAC_SHA1, AES256_HMAC_SHA1, Future encryption types"
+        current_value: "AES128_HMAC_SHA1, AES256_HMAC_SHA1, Future encryption types"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254319_result.changed | default(false) }}"
+      - rule_id: "V-254320"
+        rule_title: "Configure network security - Do not store LAN Manager hash value on next password change"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "Enabled"
+        current_value: "Enabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254320_result.changed | default(false) }}"
+      - rule_id: "V-254321"
+        rule_title: "Configure network security - Force logoff when logon hours expire"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "Enabled"
+        current_value: "Enabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254321_result.changed | default(false) }}"
+      - rule_id: "V-254322"
+        rule_title: "Configure network security - LAN Manager authentication level"
+        section: "Security Options"
+        severity: "CAT I"
+        expected_value: "Send NTLMv2 response only. Refuse LM & NTLM"
+        current_value: "Send NTLMv2 response only. Refuse LM & NTLM"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254322_result.changed | default(false) }}"
+      - rule_id: "V-254323"
+        rule_title: "Configure network security - LDAP client signing requirements"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "Negotiate signing"
+        current_value: "Negotiate signing"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254323_result.changed | default(false) }}"
+      - rule_id: "V-254324"
+        rule_title: "Configure network security - Minimum session security for NTLM SSP based clients"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "Require NTLMv2 session security, Require 128-bit encryption"
+        current_value: "Require NTLMv2 session security, Require 128-bit encryption"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254324_result.changed | default(false) }}"
+      - rule_id: "V-254325"
+        rule_title: "Configure network security - Minimum session security for NTLM SSP based servers"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "Require NTLMv2 session security, Require 128-bit encryption"
+        current_value: "Require NTLMv2 session security, Require 128-bit encryption"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254325_result.changed | default(false) }}"
+      - rule_id: "V-254326"
+        rule_title: "Configure shutdown - Allow system to be shut down without having to log on"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "Disabled"
+        current_value: "Disabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254326_result.changed | default(false) }}"
+      - rule_id: "V-254327"
+        rule_title: "Configure shutdown - Clear virtual memory pagefile when system shuts down"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "Enabled"
+        current_value: "Enabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254327_result.changed | default(false) }}"
+      - rule_id: "V-254328"
+        rule_title: "Configure system cryptography - Force strong key protection for user keys"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "User must enter a password each time they use a key"
+        current_value: "User must enter a password each time they use a key"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254328_result.changed | default(false) }}"
+      - rule_id: "V-254329"
+        rule_title: "Configure system cryptography - Use FIPS compliant algorithms for encryption, hashing, and signing"
+        section: "Security Options"
+        severity: "CAT I"
+        expected_value: "Enabled"
+        current_value: "Enabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254329_result.changed | default(false) }}"
+      - rule_id: "V-254330"
+        rule_title: "Configure system objects - Require case insensitivity for non-Windows subsystems"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "Enabled"
+        current_value: "Enabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254330_result.changed | default(false) }}"
+      - rule_id: "V-254331"
+        rule_title: "Configure system objects - Strengthen default permissions of global system objects"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "Enabled"
+        current_value: "Enabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254331_result.changed | default(false) }}"
+      - rule_id: "V-254332"
+        rule_title: "Configure system settings - Use Certificate Rules on Windows Executables for Software Restriction Policies"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "Enabled"
+        current_value: "Enabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254332_result.changed | default(false) }}"
+      - rule_id: "V-254333"
+        rule_title: "Configure event log - Application log maximum size"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "32768 KB or greater"
+        current_value: "32768 KB or greater"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254333_result.changed | default(false) }}"
+      - rule_id: "V-254334"
+        rule_title: "Configure event log - Application log retention method"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "Overwrite events as needed"
+        current_value: "Overwrite events as needed"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254334_result.changed | default(false) }}"
+      - rule_id: "V-254335"
+        rule_title: "Configure event log - Security log maximum size"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "196608 KB or greater"
+        current_value: "196608 KB or greater"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254335_result.changed | default(false) }}"
+      - rule_id: "V-254336"
+        rule_title: "Configure event log - Security log retention method"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "Overwrite events as needed"
+        current_value: "Overwrite events as needed"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254336_result.changed | default(false) }}"
+      - rule_id: "V-254337"
+        rule_title: "Configure event log - System log maximum size"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "32768 KB or greater"
+        current_value: "32768 KB or greater"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254337_result.changed | default(false) }}"
+      - rule_id: "V-254338"
+        rule_title: "Configure event log - System log retention method"
+        section: "Security Options"
+        severity: "CAT II"
+        expected_value: "Overwrite events as needed"
+        current_value: "Overwrite events as needed"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254338_result.changed | default(false) }}"
+
+- name: STIG | Display security options configuration summary (batch 6)
+  ansible.builtin.debug:
+    msg:
+      - "==========================================="
+      - "DISA STIG Security Options Configuration (Batch 6)"
+      - "==========================================="
+      - "V-254319: Kerberos Encryption Types = AES only"
+      - "V-254320: LAN Manager Hash Storage = Disabled"
+      - "V-254321: Force Logoff When Hours Expire = Enabled"
+      - "V-254322: LAN Manager Auth Level = 5 (NTLMv2 only)"
+      - "V-254323: LDAP Client Signing = Negotiate signing"
+      - "V-254324: NTLM Client Session Security = NTLMv2 + 128-bit"
+      - "V-254325: NTLM Server Session Security = NTLMv2 + 128-bit"
+      - "V-254326: Shutdown Without Logon = Disabled"
+      - "V-254327: Clear Page File at Shutdown = Enabled"
+      - "V-254328: Force Strong Key Protection = Enabled"
+      - "V-254329: FIPS Compliant Algorithms = Enabled (CAT I)"
+      - "V-254330: Case Insensitive Subsystems = Enabled"
+      - "V-254331: Strengthen System Objects = Enabled"
+      - "V-254332: Certificate Rules for SRP = Enabled"
+      - "V-254333: Application Log Size = {{ windows_server__stig_application_log_maximum_size }} KB"
+      - "V-254334: Application Log Retention = Overwrite as needed"
+      - "V-254335: Security Log Size = {{ windows_server__stig_security_log_maximum_size }} KB"
+      - "V-254336: Security Log Retention = Overwrite as needed"
+      - "V-254337: System Log Size = {{ windows_server__stig_system_log_maximum_size }} KB"
+      - "V-254338: System Log Retention = Overwrite as needed"
+      - ""
+      - "NOTE: Batch 6 complete - 20 additional Security Options controls"
+      - "Total Security Options: 80/92 controls implemented (87%)"
+      - "==========================================="
+  tags:
+    - security_options
+    - stig

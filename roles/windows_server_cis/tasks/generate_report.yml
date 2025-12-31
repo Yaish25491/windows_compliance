@@ -1,0 +1,504 @@
+---
+# CIS Microsoft Windows Server 2022 Benchmark v1.0.0
+# EPIC REQUIREMENT: Audit-Ready Compliance Reporting
+# Generate human-readable and machine-readable compliance reports
+
+# =============================================================================
+# EPIC COMPLIANCE REPORTING - AUDIT-READY OUTPUT
+# =============================================================================
+
+- name: CIS REPORT | Calculate comprehensive compliance statistics
+  ansible.builtin.set_fact:
+    windows_server__cis_compliance_stats:
+      total_controls: "{{ windows_server__cis_results | length }}"
+      passed_controls: "{{ windows_server__cis_results | selectattr('status', 'equalto', 'PASS') | list | length }}"
+      failed_controls: "{{ windows_server__cis_results | selectattr('status', 'equalto', 'FAIL') | list | length }}"
+      skipped_controls: "{{ windows_server__cis_results | selectattr('status', 'equalto', 'SKIPPED') | list | length }}"
+      audited_controls: "{{ windows_server__cis_results | selectattr('status', 'equalto', 'AUDITED') | list | length }}"
+      not_applicable_controls: "{{ windows_server__cis_results | selectattr('skip_reason', 'search', 'not applicable|Not applicable|NOT APPLICABLE') | list | length }}"
+      compliance_percentage: "{{ ((windows_server__cis_results | selectattr('status', 'equalto', 'PASS') | list | length) / (windows_server__cis_results | length) * 100) | round(2) if windows_server__cis_results | length > 0 else 0 }}"
+      high_severity_failed: "{{ windows_server__cis_results | selectattr('status', 'equalto', 'FAIL') | selectattr('severity', 'equalto', 'High') | list | length }}"
+      medium_severity_failed: "{{ windows_server__cis_results | selectattr('status', 'equalto', 'FAIL') | selectattr('severity', 'equalto', 'Medium') | list | length }}"
+      low_severity_failed: "{{ windows_server__cis_results | selectattr('status', 'equalto', 'FAIL') | selectattr('severity', 'equalto', 'Low') | list | length }}"
+  tags:
+    - reporting
+    - audit
+
+- name: CIS REPORT | Generate audit timestamps and metadata
+  ansible.builtin.set_fact:
+    windows_server__cis_report_metadata:
+      benchmark_name: "CIS Microsoft Windows Server 2022 Benchmark"
+      benchmark_version: "v1.0.0"
+      target_host: "{{ inventory_hostname }}"
+      target_fqdn: "{{ ansible_fqdn | default('Unknown') }}"
+      target_ip: "{{ ansible_default_ipv4.address | default('Unknown') }}"
+      target_system: "{{ windows_server_cis_system_info.ProductName | default('Windows Server 2022') }}"
+      target_build: "{{ windows_server_cis_system_info.Build | default('Unknown') }}"
+      target_edition: "{{ windows_server_cis_system_info.Edition | default('Unknown') }}"
+      execution_id: "{{ windows_server__cis_execution_id }}"
+      execution_start: "{{ windows_server__cis_execution_start }}"
+      execution_end: "{{ ansible_date_time.iso8601 }}"
+      execution_mode: "{{ 'CHECK MODE (Audit Only)' if ansible_check_mode else 'APPLY MODE (Hardening Applied)' }}"
+      ansible_user: "{{ ansible_user | default('Unknown') }}"
+      ansible_version: "{{ ansible_version.full | default('Unknown') }}"
+      collection_name: "ansible.windows_compliance"
+      collection_version: "{{ ansible_collection_version | default('dev') }}"
+      report_generated_date: "{{ ansible_date_time.date }}"
+      report_generated_time: "{{ ansible_date_time.time }}"
+      report_generated_iso: "{{ ansible_date_time.iso8601 }}"
+  tags:
+    - reporting
+    - audit
+
+- name: CIS REPORT | Create compliance report output directory
+  ansible.windows.win_file:
+    path: "{{ windows_server__cis_report_output_dir | default('./compliance_reports') }}"
+    state: directory
+  tags:
+    - reporting
+    - audit
+
+# =============================================================================
+# MACHINE-READABLE COMPLIANCE REPORT (JSON)
+# =============================================================================
+
+- name: CIS REPORT | Generate comprehensive JSON compliance report
+  ansible.windows.win_copy:
+    content: |
+      {
+        "report_metadata": {
+          "benchmark_name": "{{ windows_server__cis_report_metadata.benchmark_name }}",
+          "benchmark_version": "{{ windows_server__cis_report_metadata.benchmark_version }}",
+          "profile": "Level 1",
+          "target_host": "{{ windows_server__cis_report_metadata.target_host }}",
+          "target_fqdn": "{{ windows_server__cis_report_metadata.target_fqdn }}",
+          "target_ip": "{{ windows_server__cis_report_metadata.target_ip }}",
+          "target_system": "{{ windows_server__cis_report_metadata.target_system }}",
+          "target_build": "{{ windows_server__cis_report_metadata.target_build }}",
+          "target_edition": "{{ windows_server__cis_report_metadata.target_edition }}",
+          "execution_id": "{{ windows_server__cis_report_metadata.execution_id }}",
+          "execution_start": "{{ windows_server__cis_report_metadata.execution_start }}",
+          "execution_end": "{{ windows_server__cis_report_metadata.execution_end }}",
+          "execution_mode": "{{ windows_server__cis_report_metadata.execution_mode }}",
+          "ansible_user": "{{ windows_server__cis_report_metadata.ansible_user }}",
+          "ansible_version": "{{ windows_server__cis_report_metadata.ansible_version }}",
+          "collection_name": "{{ windows_server__cis_report_metadata.collection_name }}",
+          "collection_version": "{{ windows_server__cis_report_metadata.collection_version }}",
+          "report_generated": "{{ windows_server__cis_report_metadata.report_generated_iso }}"
+        },
+        "compliance_summary": {
+          "total_controls": {{ windows_server__cis_compliance_stats.total_controls }},
+          "passed_controls": {{ windows_server__cis_compliance_stats.passed_controls }},
+          "failed_controls": {{ windows_server__cis_compliance_stats.failed_controls }},
+          "skipped_controls": {{ windows_server__cis_compliance_stats.skipped_controls }},
+          "audited_controls": {{ windows_server__cis_compliance_stats.audited_controls }},
+          "not_applicable_controls": {{ windows_server__cis_compliance_stats.not_applicable_controls }},
+          "compliance_percentage": {{ windows_server__cis_compliance_stats.compliance_percentage }},
+          "high_severity_failed": {{ windows_server__cis_compliance_stats.high_severity_failed }},
+          "medium_severity_failed": {{ windows_server__cis_compliance_stats.medium_severity_failed }},
+          "low_severity_failed": {{ windows_server__cis_compliance_stats.low_severity_failed }}
+        },
+        "control_results": {{ windows_server__cis_results | to_nice_json }}
+      }
+    dest: "{{ windows_server__cis_report_output_dir | default('./compliance_reports') }}\\{{ inventory_hostname }}_cis_compliance_{{ windows_server__cis_report_metadata.report_generated_date }}.json"
+  tags:
+    - reporting
+    - audit
+    - json
+
+# Generate test-specific report format if test variables are provided
+- name: CIS REPORT | Generate test-specific JSON report
+  ansible.windows.win_copy:
+    content: "{{ windows_server__cis_results | to_nice_json }}"
+    dest: "{{ windows_server_cis_report_path }}"
+  when: 
+    - windows_server_cis_report_path is defined
+    - windows_server_cis_check_mode is defined
+  tags:
+    - reporting
+    - test
+
+# =============================================================================
+# HUMAN-READABLE HTML AUDIT REPORT
+# =============================================================================
+
+- name: CIS REPORT | Generate HTML audit report
+  ansible.builtin.copy:
+    content: |
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+          <meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>CIS Compliance Report - {{ windows_server__cis_report_metadata.target_host }}</title>
+          <style>
+              body { font-family: Arial, sans-serif; margin: 20px; background-color: #f5f5f5; }
+              .header { background-color: #2c3e50; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+              .summary { background-color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+              .control-section { background-color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+              .pass { color: #27ae60; font-weight: bold; }
+              .fail { color: #e74c3c; font-weight: bold; }
+              .skip { color: #f39c12; font-weight: bold; }
+              .audit { color: #3498db; font-weight: bold; }
+              table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+              th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+              th { background-color: #34495e; color: white; }
+              tr:nth-child(even) { background-color: #f2f2f2; }
+              .high-severity { border-left: 4px solid #e74c3c; }
+              .medium-severity { border-left: 4px solid #f39c12; }
+              .low-severity { border-left: 4px solid #f1c40f; }
+              .compliance-badge { display: inline-block; padding: 5px 10px; border-radius: 4px; color: white; font-weight: bold; }
+              .excellent { background-color: #27ae60; }
+              .good { background-color: #2ecc71; }
+              .fair { background-color: #f39c12; }
+              .poor { background-color: #e74c3c; }
+          </style>
+      </head>
+      <body>
+          <div class="header">
+              <h1>CIS Windows Server 2022 Compliance Report</h1>
+              <h2>{{ windows_server__cis_report_metadata.target_host }} ({{ windows_server__cis_report_metadata.target_ip }})</h2>
+              <p><strong>Generated:</strong> {{ windows_server__cis_report_metadata.report_generated_iso }}</p>
+              <p><strong>Execution Mode:</strong> {{ windows_server__cis_report_metadata.execution_mode }}</p>
+          </div>
+
+          <div class="summary">
+              <h2>Executive Summary</h2>
+              <p><strong>Benchmark:</strong> {{ windows_server__cis_report_metadata.benchmark_name }} {{ windows_server__cis_report_metadata.benchmark_version }}</p>
+              <p><strong>Target System:</strong> {{ windows_server__cis_report_metadata.target_system }} ({{ windows_server__cis_report_metadata.target_edition }})</p>
+              <p><strong>Compliance Score:</strong> 
+                  <span class="compliance-badge {{ 'excellent' if windows_server__cis_compliance_stats.compliance_percentage | float >= 95 else 'good' if windows_server__cis_compliance_stats.compliance_percentage | float >= 85 else 'fair' if windows_server__cis_compliance_stats.compliance_percentage | float >= 70 else 'poor' }}">
+                      {{ windows_server__cis_compliance_stats.compliance_percentage }}%
+                  </span>
+              </p>
+              
+              <table>
+                  <tr>
+                      <th>Control Status</th>
+                      <th>Count</th>
+                      <th>Percentage</th>
+                  </tr>
+                  <tr>
+                      <td class="pass">PASSED</td>
+                      <td>{{ windows_server__cis_compliance_stats.passed_controls }}</td>
+                      <td>{{ ((windows_server__cis_compliance_stats.passed_controls | int / windows_server__cis_compliance_stats.total_controls | int) * 100) | round(1) }}%</td>
+                  </tr>
+                  <tr>
+                      <td class="fail">FAILED</td>
+                      <td>{{ windows_server__cis_compliance_stats.failed_controls }}</td>
+                      <td>{{ ((windows_server__cis_compliance_stats.failed_controls | int / windows_server__cis_compliance_stats.total_controls | int) * 100) | round(1) }}%</td>
+                  </tr>
+                  <tr>
+                      <td class="skip">SKIPPED</td>
+                      <td>{{ windows_server__cis_compliance_stats.skipped_controls }}</td>
+                      <td>{{ ((windows_server__cis_compliance_stats.skipped_controls | int / windows_server__cis_compliance_stats.total_controls | int) * 100) | round(1) }}%</td>
+                  </tr>
+                  <tr>
+                      <td class="audit">AUDITED</td>
+                      <td>{{ windows_server__cis_compliance_stats.audited_controls }}</td>
+                      <td>{{ ((windows_server__cis_compliance_stats.audited_controls | int / windows_server__cis_compliance_stats.total_controls | int) * 100) | round(1) }}%</td>
+                  </tr>
+                  <tr>
+                      <td><strong>TOTAL</strong></td>
+                      <td><strong>{{ windows_server__cis_compliance_stats.total_controls }}</strong></td>
+                      <td><strong>100%</strong></td>
+                  </tr>
+              </table>
+          </div>
+
+          {% if windows_server__cis_compliance_stats.failed_controls | int > 0 %}
+          <div class="control-section">
+              <h2>Failed Controls Requiring Attention</h2>
+              <table>
+                  <tr>
+                      <th>Rule ID</th>
+                      <th>Control Description</th>
+                      <th>Severity</th>
+                      <th>Expected Value</th>
+                      <th>Actual Value</th>
+                      <th>Section</th>
+                  </tr>
+                  {% for result in windows_server__cis_results %}
+                  {% if result.status == 'FAIL' %}
+                  <tr class="{{ result.severity.lower() }}-severity">
+                      <td><strong>{{ result.rule_id }}</strong></td>
+                      <td>{{ result.rule_title }}</td>
+                      <td><span class="{{ 'fail' if result.severity == 'High' else 'skip' if result.severity == 'Medium' else 'audit' }}">{{ result.severity }}</span></td>
+                      <td><code>{{ result.expected_value }}</code></td>
+                      <td><code>{{ result.current_value }}</code></td>
+                      <td>{{ result.rule_section }}</td>
+                  </tr>
+                  {% endif %}
+                  {% endfor %}
+              </table>
+          </div>
+          {% endif %}
+
+          <div class="control-section">
+              <h2>Complete Control Results</h2>
+              <table>
+                  <tr>
+                      <th>Rule ID</th>
+                      <th>Control Description</th>
+                      <th>Status</th>
+                      <th>Severity</th>
+                      <th>Expected</th>
+                      <th>Actual</th>
+                      <th>Changed</th>
+                  </tr>
+                  {% for result in windows_server__cis_results %}
+                  <tr>
+                      <td><strong>{{ result.rule_id }}</strong></td>
+                      <td>{{ result.rule_title }}</td>
+                      <td><span class="{{ result.status.lower() }}">{{ result.status }}</span></td>
+                      <td>{{ result.severity }}</td>
+                      <td><code>{{ result.expected_value }}</code></td>
+                      <td><code>{{ result.current_value }}</code></td>
+                      <td>{{ 'Yes' if result.changed else 'No' }}</td>
+                  </tr>
+                  {% endfor %}
+              </table>
+          </div>
+
+          <div class="summary">
+              <h2>Report Metadata</h2>
+              <p><strong>Execution ID:</strong> {{ windows_server__cis_report_metadata.execution_id }}</p>
+              <p><strong>Ansible Version:</strong> {{ windows_server__cis_report_metadata.ansible_version }}</p>
+              <p><strong>Collection:</strong> {{ windows_server__cis_report_metadata.collection_name }} {{ windows_server__cis_report_metadata.collection_version }}</p>
+              <p><strong>Executed By:</strong> {{ windows_server__cis_report_metadata.ansible_user }}</p>
+          </div>
+      </body>
+      </html>
+    dest: "{{ windows_server__cis_report_output_dir | default('./compliance_reports') }}/{{ inventory_hostname }}_cis_compliance_{{ windows_server__cis_report_metadata.report_generated_date }}.html"
+  delegate_to: localhost
+  tags:
+    - reporting
+    - audit
+    - html
+
+# =============================================================================
+# MARKDOWN AUDIT REPORT
+# =============================================================================
+
+- name: CIS REPORT | Generate Markdown audit report
+  ansible.builtin.copy:
+    content: |
+      # CIS Windows Server 2022 Compliance Report
+      
+      **Target System:** {{ windows_server__cis_report_metadata.target_host }} ({{ windows_server__cis_report_metadata.target_ip }})  
+      **Generated:** {{ windows_server__cis_report_metadata.report_generated_iso }}  
+      **Execution Mode:** {{ windows_server__cis_report_metadata.execution_mode }}  
+      
+      ## Executive Summary
+      
+      - **Benchmark:** {{ windows_server__cis_report_metadata.benchmark_name }} {{ windows_server__cis_report_metadata.benchmark_version }}
+      - **Target System:** {{ windows_server__cis_report_metadata.target_system }} ({{ windows_server__cis_report_metadata.target_edition }})
+      - **Compliance Score:** **{{ windows_server__cis_compliance_stats.compliance_percentage }}%**
+      
+      ### Control Summary
+      
+      | Status | Count | Percentage |
+      |--------|-------|------------|
+      | ✅ **PASSED** | {{ windows_server__cis_compliance_stats.passed_controls }} | {{ ((windows_server__cis_compliance_stats.passed_controls | int / windows_server__cis_compliance_stats.total_controls | int) * 100) | round(1) }}% |
+      | ❌ **FAILED** | {{ windows_server__cis_compliance_stats.failed_controls }} | {{ ((windows_server__cis_compliance_stats.failed_controls | int / windows_server__cis_compliance_stats.total_controls | int) * 100) | round(1) }}% |
+      | ⏭️ **SKIPPED** | {{ windows_server__cis_compliance_stats.skipped_controls }} | {{ ((windows_server__cis_compliance_stats.skipped_controls | int / windows_server__cis_compliance_stats.total_controls | int) * 100) | round(1) }}% |
+      | 📋 **AUDITED** | {{ windows_server__cis_compliance_stats.audited_controls }} | {{ ((windows_server__cis_compliance_stats.audited_controls | int / windows_server__cis_compliance_stats.total_controls | int) * 100) | round(1) }}% |
+      | **TOTAL** | **{{ windows_server__cis_compliance_stats.total_controls }}** | **100%** |
+      
+      {% if windows_server__cis_compliance_stats.failed_controls | int > 0 %}
+      ## ❌ Failed Controls Requiring Attention
+      
+      {% for result in windows_server__cis_results %}
+      {% if result.status == 'FAIL' %}
+      ### {{ result.rule_id }}: {{ result.rule_title }}
+      - **Section:** {{ result.rule_section }}
+      - **Severity:** {{ '🔴 High' if result.severity == 'High' else '🟡 Medium' if result.severity == 'Medium' else '🔵 Low' }}
+      - **Expected:** `{{ result.expected_value }}`
+      - **Actual:** `{{ result.current_value }}`
+      {% if result.skip_reason %}
+      - **Skip Reason:** {{ result.skip_reason }}
+      {% endif %}
+      
+      {% endif %}
+      {% endfor %}
+      {% endif %}
+      
+      ## Complete Control Results
+      
+      | Rule ID | Control Description | Status | Severity | Expected | Actual | Changed |
+      |---------|-------------------|--------|----------|----------|---------|---------|
+      {% for result in windows_server__cis_results %}
+      | **{{ result.rule_id }}** | {{ result.rule_title }} | {{ '✅' if result.status == 'PASS' else '❌' if result.status == 'FAIL' else '⏭️' if result.status == 'SKIPPED' else '📋' }} {{ result.status }} | {{ result.severity }} | `{{ result.expected_value }}` | `{{ result.current_value }}` | {{ 'Yes' if result.changed else 'No' }} |
+      {% endfor %}
+      
+      ## Report Metadata
+      
+      - **Execution ID:** {{ windows_server__cis_report_metadata.execution_id }}
+      - **Ansible Version:** {{ windows_server__cis_report_metadata.ansible_version }}
+      - **Collection:** {{ windows_server__cis_report_metadata.collection_name }} {{ windows_server__cis_report_metadata.collection_version }}
+      - **Executed By:** {{ windows_server__cis_report_metadata.ansible_user }}
+      - **System Details:** {{ windows_server__cis_report_metadata.target_system }} Build {{ windows_server__cis_report_metadata.target_build }}
+    dest: "{{ windows_server__cis_report_output_dir | default('./compliance_reports') }}/{{ inventory_hostname }}_cis_compliance_{{ windows_server__cis_report_metadata.report_generated_date }}.md"
+  delegate_to: localhost
+  tags:
+    - reporting
+    - audit
+    - markdown
+
+# =============================================================================
+# CI/CD INTEGRATION OUTPUT
+# =============================================================================
+
+- name: CIS REPORT | Generate CI/CD environment variables
+  ansible.builtin.copy:
+    content: |
+      # CIS Compliance Results - CI/CD Integration
+      COMPLIANCE_PERCENTAGE={{ windows_server__cis_compliance_stats.compliance_percentage }}
+      COMPLIANCE_STATUS={{ 'PASS' if windows_server__cis_compliance_stats.compliance_percentage | float >= 95 else 'FAIL' }}
+      TOTAL_CONTROLS={{ windows_server__cis_compliance_stats.total_controls }}
+      PASSED_CONTROLS={{ windows_server__cis_compliance_stats.passed_controls }}
+      FAILED_CONTROLS={{ windows_server__cis_compliance_stats.failed_controls }}
+      SKIPPED_CONTROLS={{ windows_server__cis_compliance_stats.skipped_controls }}
+      AUDITED_CONTROLS={{ windows_server__cis_compliance_stats.audited_controls }}
+      HIGH_SEVERITY_FAILED={{ windows_server__cis_compliance_stats.high_severity_failed }}
+      MEDIUM_SEVERITY_FAILED={{ windows_server__cis_compliance_stats.medium_severity_failed }}
+      LOW_SEVERITY_FAILED={{ windows_server__cis_compliance_stats.low_severity_failed }}
+      EXECUTION_MODE={{ 'check' if ansible_check_mode else 'apply' }}
+      BENCHMARK=CIS_Windows_Server_2022_v1.0.0
+      TARGET_HOST={{ windows_server__cis_report_metadata.target_host }}
+      TARGET_IP={{ windows_server__cis_report_metadata.target_ip }}
+      EXECUTION_ID={{ windows_server__cis_report_metadata.execution_id }}
+      REPORT_TIMESTAMP={{ windows_server__cis_report_metadata.report_generated_iso }}
+    dest: "{{ windows_server__cis_report_output_dir | default('./compliance_reports') }}/{{ inventory_hostname }}_cis_compliance_{{ windows_server__cis_report_metadata.report_generated_date }}.env"
+  delegate_to: localhost
+  tags:
+    - reporting
+    - audit
+    - ci_cd
+
+# =============================================================================
+# REMEDIATION GUIDE GENERATION
+# =============================================================================
+
+- name: CIS REPORT | Generate remediation guide for failed controls
+  ansible.builtin.copy:
+    content: |
+      # CIS Compliance Remediation Guide
+      
+      **Generated:** {{ windows_server__cis_report_metadata.report_generated_iso }}  
+      **Target:** {{ windows_server__cis_report_metadata.target_host }}  
+      **Current Compliance:** {{ windows_server__cis_compliance_stats.compliance_percentage }}%
+      
+      {% if windows_server__cis_compliance_stats.failed_controls | int > 0 %}
+      ## 🔧 Failed Controls Requiring Remediation
+      
+      **Total Failed Controls:** {{ windows_server__cis_compliance_stats.failed_controls }}  
+      **High Severity:** {{ windows_server__cis_compliance_stats.high_severity_failed }}  
+      **Medium Severity:** {{ windows_server__cis_compliance_stats.medium_severity_failed }}  
+      **Low Severity:** {{ windows_server__cis_compliance_stats.low_severity_failed }}  
+      
+      ### Priority Order (High to Low Severity)
+      
+      {% for result in windows_server__cis_results %}
+      {% if result.status == 'FAIL' and result.severity == 'High' %}
+      #### 🔴 {{ result.rule_id }}: {{ result.rule_title }}
+      - **Section:** {{ result.rule_section }}
+      - **Current Value:** `{{ result.current_value }}`
+      - **Required Value:** `{{ result.expected_value }}`
+      - **Remediation:** Re-run the CIS role or manually configure this setting
+      
+      {% endif %}
+      {% endfor %}
+      
+      {% for result in windows_server__cis_results %}
+      {% if result.status == 'FAIL' and result.severity == 'Medium' %}
+      #### 🟡 {{ result.rule_id }}: {{ result.rule_title }}
+      - **Section:** {{ result.rule_section }}
+      - **Current Value:** `{{ result.current_value }}`
+      - **Required Value:** `{{ result.expected_value }}`
+      
+      {% endif %}
+      {% endfor %}
+      
+      {% for result in windows_server__cis_results %}
+      {% if result.status == 'FAIL' and result.severity == 'Low' %}
+      #### 🔵 {{ result.rule_id }}: {{ result.rule_title }}
+      - **Section:** {{ result.rule_section }}
+      - **Current Value:** `{{ result.current_value }}`
+      - **Required Value:** `{{ result.expected_value }}`
+      
+      {% endif %}
+      {% endfor %}
+      
+      ## 🚀 Recommended Actions
+      
+      1. **Immediate (High Priority):** Address {{ windows_server__cis_compliance_stats.high_severity_failed }} high-severity failed controls
+      2. **Short-term (Medium Priority):** Address {{ windows_server__cis_compliance_stats.medium_severity_failed }} medium-severity failed controls  
+      3. **Long-term (Low Priority):** Address {{ windows_server__cis_compliance_stats.low_severity_failed }} low-severity failed controls
+      
+      ### Re-run Command
+      ```bash
+      # Apply hardening
+      ansible-playbook -i inventory windows_server_cis.yml
+      
+      # Verify compliance (audit-only)
+      ansible-playbook -i inventory windows_server_cis.yml --check
+      ```
+      {% else %}
+      ## ✅ All Controls Passing
+      
+      Congratulations! All {{ windows_server__cis_compliance_stats.total_controls }} controls are compliant. No remediation required.
+      {% endif %}
+      
+      ---
+      **Report Generation Details**  
+      **Execution ID:** {{ windows_server__cis_report_metadata.execution_id }}  
+      **Collection:** {{ windows_server__cis_report_metadata.collection_name }} {{ windows_server__cis_report_metadata.collection_version }}
+    dest: "{{ windows_server__cis_report_output_dir | default('./compliance_reports') }}/{{ inventory_hostname }}_cis_remediation_guide_{{ windows_server__cis_report_metadata.report_generated_date }}.md"
+  delegate_to: localhost
+  tags:
+    - reporting
+    - audit
+    - remediation
+
+# =============================================================================
+# REPORT GENERATION SUMMARY
+# =============================================================================
+
+- name: CIS REPORT | Display comprehensive report generation summary
+  ansible.builtin.debug:
+    msg:
+      - "=========================================="
+      - "🏆 EPIC COMPLIANCE REPORT GENERATED"
+      - "=========================================="
+      - "Target: {{ windows_server__cis_report_metadata.target_host }} ({{ windows_server__cis_report_metadata.target_ip }})"
+      - "System: {{ windows_server__cis_report_metadata.target_system }}"
+      - "Benchmark: {{ windows_server__cis_report_metadata.benchmark_name }} {{ windows_server__cis_report_metadata.benchmark_version }}"
+      - "Generated: {{ windows_server__cis_report_metadata.report_generated_iso }}"
+      - "Mode: {{ windows_server__cis_report_metadata.execution_mode }}"
+      - ""
+      - "📊 COMPLIANCE SUMMARY:"
+      - "Compliance Score: {{ windows_server__cis_compliance_stats.compliance_percentage }}%"
+      - "Total Controls: {{ windows_server__cis_compliance_stats.total_controls }}"
+      - "✅ Passed: {{ windows_server__cis_compliance_stats.passed_controls }}"
+      - "❌ Failed: {{ windows_server__cis_compliance_stats.failed_controls }}"
+      - "⏭️ Skipped: {{ windows_server__cis_compliance_stats.skipped_controls }}"
+      - "📋 Audited: {{ windows_server__cis_compliance_stats.audited_controls }}"
+      - ""
+      - "🔥 FAILED CONTROLS BY SEVERITY:"
+      - "🔴 High: {{ windows_server__cis_compliance_stats.high_severity_failed }}"
+      - "🟡 Medium: {{ windows_server__cis_compliance_stats.medium_severity_failed }}"
+      - "🔵 Low: {{ windows_server__cis_compliance_stats.low_severity_failed }}"
+      - ""
+      - "📁 GENERATED REPORTS:"
+      - "JSON (Machine-Readable): {{ windows_server__cis_report_output_dir | default('./compliance_reports') }}/{{ inventory_hostname }}_cis_compliance_{{ windows_server__cis_report_metadata.report_generated_date }}.json"
+      - "HTML (Audit Report): {{ windows_server__cis_report_output_dir | default('./compliance_reports') }}/{{ inventory_hostname }}_cis_compliance_{{ windows_server__cis_report_metadata.report_generated_date }}.html"
+      - "Markdown (Documentation): {{ windows_server__cis_report_output_dir | default('./compliance_reports') }}/{{ inventory_hostname }}_cis_compliance_{{ windows_server__cis_report_metadata.report_generated_date }}.md"
+      - "CI/CD Variables: {{ windows_server__cis_report_output_dir | default('./compliance_reports') }}/{{ inventory_hostname }}_cis_compliance_{{ windows_server__cis_report_metadata.report_generated_date }}.env"
+      - "Remediation Guide: {{ windows_server__cis_report_output_dir | default('./compliance_reports') }}/{{ inventory_hostname }}_cis_remediation_guide_{{ windows_server__cis_report_metadata.report_generated_date }}.md"
+      - "=========================================="
+      - "{{ '✅ AUDIT-READY - Reports suitable for compliance review' if windows_server__cis_compliance_stats.compliance_percentage | float >= 95 else '⚠️ REMEDIATION REQUIRED - Review failed controls' }}"
+      - "=========================================="
+  tags:
+    - reporting
+    - audit

@@ -1,0 +1,279 @@
+---
+# CIS Microsoft Windows Server 2022 Benchmark v1.0.0
+# Section 2.3: Security Options
+# Registry-based security policy implementation
+
+# =============================================================================
+# CIS 2.3.1.1 - Accounts: Administrator account status
+# =============================================================================
+
+- name: CIS 2.3.1.1 | AUDIT | Get current Administrator account status
+  ansible.windows.win_shell: |
+    try {
+      $admin = Get-LocalUser -Name "Administrator" -ErrorAction Stop
+      if ($admin.Enabled) { "Enabled" } else { "Disabled" }
+    } catch {
+      "Not Found"
+    }
+  register: windows_server__cis_2_3_1_1_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_2.3.1.1
+    - security_options
+    - level_1
+    - audit
+
+- name: CIS 2.3.1.1 | SCORED | Configure Administrator account status
+  ansible.windows.win_shell: |
+    try {
+      $admin = Get-LocalUser -Name "Administrator" -ErrorAction Stop
+      if ({{ windows_server__cis_accounts_administrator_account_status | lower }}) {
+        if (-not $admin.Enabled) {
+          Enable-LocalUser -Name "Administrator"
+          "CHANGED"
+        } else {
+          "NO_CHANGE"
+        }
+      } else {
+        if ($admin.Enabled) {
+          Disable-LocalUser -Name "Administrator" 
+          "CHANGED"
+        } else {
+          "NO_CHANGE"
+        }
+      }
+    } catch {
+      "ERROR: $_"
+    }
+  register: windows_server__cis_2_3_1_1_result
+  when:
+    - "'2.3.1.1' not in windows_server__cis_skip_rules"
+    - not windows_server_cis_is_domain_controller | default(false)
+  tags:
+    - cis_2.3.1.1
+    - security_options
+    - level_1
+    - scored
+
+- name: CIS 2.3.1.1 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '2.3.1.1',
+        'rule_title': 'Accounts: Administrator account status',
+        'rule_section': 'Security Options',
+        'severity': 'Medium',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Enabled' if windows_server__cis_accounts_administrator_account_status else 'Disabled',
+        'current_value': windows_server__cis_2_3_1_1_current.stdout | trim,
+        'status': 'PASS' if ((windows_server__cis_2_3_1_1_current.stdout | trim == 'Enabled') == (windows_server__cis_accounts_administrator_account_status | bool)) else 'FAIL',
+        'changed': windows_server__cis_2_3_1_1_result.stdout | default('') | trim == 'CHANGED',
+        'skip_reason': 'User configured skip' if '2.3.1.1' in windows_server__cis_skip_rules else ('Domain Controller - not applicable' if windows_server_cis_is_domain_controller | default(false) else ''),
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_2.3.1.1
+    - security_options
+
+# =============================================================================
+# CIS 2.3.1.2 - Accounts: Guest account status
+# =============================================================================
+
+- name: CIS 2.3.1.2 | AUDIT | Get current Guest account status
+  ansible.windows.win_shell: |
+    try {
+      $guest = Get-LocalUser -Name "Guest" -ErrorAction Stop
+      if ($guest.Enabled) { "Enabled" } else { "Disabled" }
+    } catch {
+      "Not Found"
+    }
+  register: windows_server__cis_2_3_1_2_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_2.3.1.2
+    - security_options
+    - level_1
+    - audit
+
+- name: CIS 2.3.1.2 | SCORED | Configure Guest account status (should be disabled)
+  ansible.windows.win_shell: |
+    try {
+      $guest = Get-LocalUser -Name "Guest" -ErrorAction Stop
+      if ($guest.Enabled) {
+        Disable-LocalUser -Name "Guest"
+        "CHANGED"
+      } else {
+        "NO_CHANGE"
+      }
+    } catch {
+      "ERROR: $_"
+    }
+  register: windows_server__cis_2_3_1_2_result
+  when:
+    - "'2.3.1.2' not in windows_server__cis_skip_rules"
+    - not windows_server__cis_accounts_guest_account_status | bool
+  tags:
+    - cis_2.3.1.2
+    - security_options
+    - level_1
+    - scored
+
+- name: CIS 2.3.1.2 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '2.3.1.2',
+        'rule_title': 'Accounts: Guest account status',
+        'rule_section': 'Security Options',
+        'severity': 'High',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Disabled',
+        'current_value': windows_server__cis_2_3_1_2_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_2_3_1_2_current.stdout | trim == 'Disabled') else 'FAIL',
+        'changed': windows_server__cis_2_3_1_2_result.stdout | default('') | trim == 'CHANGED',
+        'skip_reason': 'User configured skip' if '2.3.1.2' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_2.3.1.2
+    - security_options
+
+# =============================================================================
+# CIS 2.3.1.3 - Accounts: Limit local account use of blank passwords
+# =============================================================================
+
+- name: CIS 2.3.1.3 | AUDIT | Get current blank password limitation setting
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\Lsa
+    name: LimitBlankPasswordUse
+    state: present
+  register: windows_server__cis_2_3_1_3_current
+  check_mode: true
+  tags:
+    - cis_2.3.1.3
+    - security_options
+    - level_1
+    - audit
+
+- name: CIS 2.3.1.3 | SCORED | Set blank password limitation (should be enabled)
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\Lsa
+    name: LimitBlankPasswordUse
+    data: 1
+    type: dword
+  register: windows_server__cis_2_3_1_3_result
+  when:
+    - "'2.3.1.3' not in windows_server__cis_skip_rules"
+    - windows_server__cis_accounts_limit_local_account_use | bool
+  tags:
+    - cis_2.3.1.3
+    - security_options
+    - level_1
+    - scored
+
+- name: CIS 2.3.1.3 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '2.3.1.3',
+        'rule_title': 'Accounts: Limit local account use of blank passwords to console logon only',
+        'rule_section': 'Security Options',
+        'severity': 'High',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': '1 (Enabled)',
+        'current_value': windows_server__cis_2_3_1_3_current.data | default(0) | string,
+        'status': 'PASS' if (windows_server__cis_2_3_1_3_current.data | default(0) == 1) else 'FAIL',
+        'changed': windows_server__cis_2_3_1_3_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '2.3.1.3' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_2.3.1.3
+    - security_options
+
+# =============================================================================
+# CIS 2.3.2.1 - Audit: Force audit policy subcategory settings
+# =============================================================================
+
+- name: CIS 2.3.2.1 | AUDIT | Get current force audit policy subcategory setting
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\Lsa
+    name: SCENoApplyLegacyAuditPolicy
+    state: present
+  register: windows_server__cis_2_3_2_1_current
+  check_mode: true
+  tags:
+    - cis_2.3.2.1
+    - security_options
+    - level_1
+    - audit
+
+- name: CIS 2.3.2.1 | SCORED | Set force audit policy subcategory settings (should be enabled)
+  ansible.windows.win_regedit:
+    path: HKLM:\SYSTEM\CurrentControlSet\Control\Lsa
+    name: SCENoApplyLegacyAuditPolicy
+    data: 1
+    type: dword
+  register: windows_server__cis_2_3_2_1_result
+  when:
+    - "'2.3.2.1' not in windows_server__cis_skip_rules"
+    - windows_server__cis_audit_force_audit_policy_subcategory_settings | bool
+  tags:
+    - cis_2.3.2.1
+    - security_options
+    - level_1
+    - scored
+
+- name: CIS 2.3.2.1 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '2.3.2.1',
+        'rule_title': 'Audit: Force audit policy subcategory settings',
+        'rule_section': 'Security Options',
+        'severity': 'Medium',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': '1 (Enabled)',
+        'current_value': windows_server__cis_2_3_2_1_current.data | default(0) | string,
+        'status': 'PASS' if (windows_server__cis_2_3_2_1_current.data | default(0) == 1) else 'FAIL',
+        'changed': windows_server__cis_2_3_2_1_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '2.3.2.1' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_2.3.2.1
+    - security_options
+
+# =============================================================================
+# SECTION SUMMARY - Security Options (Sample Implementation)
+# =============================================================================
+
+- name: CIS Section 2.3 | Display security options summary
+  ansible.builtin.debug:
+    msg:
+      - "=========================================="
+      - "CIS Section 2.3: Security Options Summary"  
+      - "=========================================="
+      - "SAMPLE IMPLEMENTATION - 4 critical controls demonstrated"
+      - "2.3.1.1 Administrator Account: {{ 'Enabled' if windows_server__cis_accounts_administrator_account_status else 'Disabled' }}"
+      - "2.3.1.2 Guest Account: Disabled ({{ 'COMPLIANT' if not windows_server__cis_accounts_guest_account_status else 'NON-COMPLIANT' }})"
+      - "2.3.1.3 Blank Password Limitation: {{ 'Enabled (COMPLIANT)' if windows_server__cis_accounts_limit_local_account_use else 'Disabled (NON-COMPLIANT)' }}"
+      - "2.3.2.1 Audit Subcategory Settings: {{ 'Enabled (COMPLIANT)' if windows_server__cis_audit_force_audit_policy_subcategory_settings else 'Disabled (NON-COMPLIANT)' }}"
+      - "Note: Additional 48 security options require implementation"
+      - "This demonstrates registry-based security policy automation"
+      - "=========================================="
+      - "Execution Mode: {{ 'CHECK MODE (No Changes Applied)' if ansible_check_mode else 'APPLY MODE (Changes Applied)' }}"
+      - "=========================================="
+  when: not ansible_check_mode or true
+  tags:
+    - security_options
+    - section_2
+    - summary

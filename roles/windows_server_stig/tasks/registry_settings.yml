@@ -1,0 +1,41 @@
+---
+# =============================================================================
+# DISA STIG V-254351 through V-254400 - Registry Settings
+# Windows Registry Security Configuration for Government Compliance
+# =============================================================================
+
+- name: STIG | REGISTRY | Display registry settings implementation banner
+  ansible.builtin.debug:
+    msg:
+      - "==========================================="
+      - "DISA STIG Registry Settings Configuration"
+      - "==========================================="
+      - "Implementing STIG V-254351 through V-254400"
+      - "Registry-based security controls for enhanced protection"
+      - "Autoplay, RDP, IE, Defender, and Windows Update hardening"
+      - "==========================================="
+  tags:
+    - registry_settings
+    - stig
+
+# =============================================================================
+# IMPORT REGISTRY SETTINGS BATCHES
+# =============================================================================
+
+- name: STIG | Apply registry settings controls (batch 1)
+  ansible.builtin.include_tasks: registry_settings_batch1.yml
+  tags:
+    - registry_settings
+    - stig
+
+- name: STIG | Apply registry settings controls (batch 2)
+  ansible.builtin.include_tasks: registry_settings_batch2.yml
+  tags:
+    - registry_settings
+    - stig
+
+- name: STIG | Apply registry settings controls (batch 3 - final)
+  ansible.builtin.include_tasks: registry_settings_batch3.yml
+  tags:
+    - registry_settings
+    - stig

@@ -1,0 +1,504 @@
+---
+# CIS Microsoft Windows Server 2022 Benchmark v1.0.0
+# Section 5: System Services
+# Enterprise Implementation - Critical Service Controls
+
+# =============================================================================
+# CIS 5.1 - Print Spooler (Spooler) service status
+# =============================================================================
+
+- name: CIS 5.1 | AUDIT | Get current Print Spooler service status
+  ansible.windows.win_shell: |
+    try {
+      $service = Get-Service -Name "Spooler" -ErrorAction Stop
+      $service.Status
+    } catch {
+      "Not Found"
+    }
+  register: windows_server__cis_5_1_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_5.1
+    - system_services
+    - level_1
+    - audit
+
+- name: CIS 5.1 | SCORED | Configure Print Spooler service (should be disabled on non-print servers)
+  ansible.windows.win_service:
+    name: Spooler
+    state: stopped
+    start_mode: disabled
+  register: windows_server__cis_5_1_result
+  when:
+    - "'5.1' not in windows_server__cis_skip_rules"
+    - not windows_server__cis_allow_print_spooler | bool
+    - windows_server__cis_5_1_current.stdout | trim != "Stopped"
+  tags:
+    - cis_5.1
+    - system_services
+    - level_1
+    - scored
+
+- name: CIS 5.1 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '5.1',
+        'rule_title': 'Print Spooler (Spooler) service',
+        'rule_section': 'System Services',
+        'severity': 'Medium',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Stopped' if not windows_server__cis_allow_print_spooler else 'Running',
+        'current_value': windows_server__cis_5_1_current.stdout | trim,
+        'status': 'PASS' if ((windows_server__cis_5_1_current.stdout | trim == 'Stopped') == (not windows_server__cis_allow_print_spooler | bool)) else 'FAIL',
+        'changed': windows_server__cis_5_1_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '5.1' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_5.1
+    - system_services
+
+# =============================================================================
+# CIS 5.2 - Remote Registry (RemoteRegistry) service
+# =============================================================================
+
+- name: CIS 5.2 | AUDIT | Get current Remote Registry service status
+  ansible.windows.win_shell: |
+    try {
+      $service = Get-Service -Name "RemoteRegistry" -ErrorAction Stop
+      $service.Status
+    } catch {
+      "Not Found"
+    }
+  register: windows_server__cis_5_2_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_5.2
+    - system_services
+    - level_1
+    - audit
+
+- name: CIS 5.2 | SCORED | Configure Remote Registry service (should be disabled)
+  ansible.windows.win_service:
+    name: RemoteRegistry
+    state: stopped
+    start_mode: disabled
+    force_dependent_services: true
+  register: windows_server__cis_5_2_result
+  when:
+    - "'5.2' not in windows_server__cis_skip_rules"
+    - windows_server__cis_5_2_current.stdout | trim != "Stopped"
+  tags:
+    - cis_5.2
+    - system_services
+    - level_1
+    - scored
+
+- name: CIS 5.2 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '5.2',
+        'rule_title': 'Remote Registry (RemoteRegistry) service',
+        'rule_section': 'System Services',
+        'severity': 'High',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Stopped',
+        'current_value': windows_server__cis_5_2_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_5_2_current.stdout | trim == 'Stopped') else 'FAIL',
+        'changed': windows_server__cis_5_2_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '5.2' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_5.2
+    - system_services
+
+# =============================================================================
+# CIS 5.3 - Server (LanmanServer) service
+# =============================================================================
+
+- name: CIS 5.3 | AUDIT | Get current Server service status
+  ansible.windows.win_shell: |
+    try {
+      $service = Get-Service -Name "LanmanServer" -ErrorAction Stop
+      $service.Status
+    } catch {
+      "Not Found"
+    }
+  register: windows_server__cis_5_3_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_5.3
+    - system_services
+    - level_1
+    - audit
+
+- name: CIS 5.3 | SCORED | Configure Server service (should be running for file sharing)
+  ansible.windows.win_service:
+    name: LanmanServer
+    state: "{{ 'started' if windows_server__cis_allow_file_sharing else 'stopped' }}"
+    start_mode: "{{ 'auto' if windows_server__cis_allow_file_sharing else 'disabled' }}"
+  register: windows_server__cis_5_3_result
+  when:
+    - "'5.3' not in windows_server__cis_skip_rules"
+    - (windows_server__cis_5_3_current.stdout | trim == "Running") != (windows_server__cis_allow_file_sharing | bool)
+  tags:
+    - cis_5.3
+    - system_services
+    - level_1
+    - scored
+
+- name: CIS 5.3 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '5.3',
+        'rule_title': 'Server (LanmanServer) service',
+        'rule_section': 'System Services',
+        'severity': 'Medium',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Running' if windows_server__cis_allow_file_sharing else 'Stopped',
+        'current_value': windows_server__cis_5_3_current.stdout | trim,
+        'status': 'PASS' if ((windows_server__cis_5_3_current.stdout | trim == 'Running') == (windows_server__cis_allow_file_sharing | bool)) else 'FAIL',
+        'changed': windows_server__cis_5_3_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '5.3' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_5.3
+    - system_services
+
+# =============================================================================
+# CIS 5.4 - Simple TCP/IP Services (simptcp) service
+# =============================================================================
+
+- name: CIS 5.4 | AUDIT | Get current Simple TCP/IP Services status
+  ansible.windows.win_shell: |
+    try {
+      $service = Get-Service -Name "simptcp" -ErrorAction Stop
+      $service.Status
+    } catch {
+      "Not Found"
+    }
+  register: windows_server__cis_5_4_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_5.4
+    - system_services
+    - level_1
+    - audit
+
+- name: CIS 5.4 | SCORED | Configure Simple TCP/IP Services (should be disabled)
+  ansible.windows.win_service:
+    name: simptcp
+    state: stopped
+    start_mode: disabled
+    force_dependent_services: true
+  register: windows_server__cis_5_4_result
+  when:
+    - "'5.4' not in windows_server__cis_skip_rules"
+    - windows_server__cis_5_4_current.stdout | trim != "Not Found"
+    - windows_server__cis_5_4_current.stdout | trim != "Stopped"
+  tags:
+    - cis_5.4
+    - system_services
+    - level_1
+    - scored
+
+- name: CIS 5.4 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '5.4',
+        'rule_title': 'Simple TCP/IP Services (simptcp)',
+        'rule_section': 'System Services',
+        'severity': 'Medium',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Not Installed or Stopped',
+        'current_value': windows_server__cis_5_4_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_5_4_current.stdout | trim in ['Not Found', 'Stopped']) else 'FAIL',
+        'changed': windows_server__cis_5_4_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '5.4' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_5.4
+    - system_services
+
+# =============================================================================
+# CIS 5.5 - Telnet (TlntSvr) service
+# =============================================================================
+
+- name: CIS 5.5 | AUDIT | Get current Telnet service status
+  ansible.windows.win_shell: |
+    try {
+      $service = Get-Service -Name "TlntSvr" -ErrorAction Stop
+      $service.Status
+    } catch {
+      "Not Found"
+    }
+  register: windows_server__cis_5_5_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_5.5
+    - system_services
+    - level_1
+    - audit
+
+- name: CIS 5.5 | SCORED | Configure Telnet service (should be disabled)
+  ansible.windows.win_service:
+    name: TlntSvr
+    state: stopped
+    start_mode: disabled
+    force_dependent_services: true
+  register: windows_server__cis_5_5_result
+  when:
+    - "'5.5' not in windows_server__cis_skip_rules"
+    - windows_server__cis_5_5_current.stdout | trim != "Not Found"
+    - windows_server__cis_5_5_current.stdout | trim != "Stopped"
+  tags:
+    - cis_5.5
+    - system_services
+    - level_1
+    - scored
+
+- name: CIS 5.5 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '5.5',
+        'rule_title': 'Telnet (TlntSvr) service',
+        'rule_section': 'System Services',
+        'severity': 'High',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Not Installed or Stopped',
+        'current_value': windows_server__cis_5_5_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_5_5_current.stdout | trim in ['Not Found', 'Stopped']) else 'FAIL',
+        'changed': windows_server__cis_5_5_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '5.5' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_5.5
+    - system_services
+
+# =============================================================================
+# CIS 5.6 - Windows Remote Management (WS-Management) (WinRM) service
+# =============================================================================
+
+- name: CIS 5.6 | AUDIT | Get current WinRM service status
+  ansible.windows.win_shell: |
+    try {
+      $service = Get-Service -Name "WinRM" -ErrorAction Stop
+      $service.Status
+    } catch {
+      "Not Found"
+    }
+  register: windows_server__cis_5_6_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_5.6
+    - system_services
+    - level_1
+    - audit
+
+- name: CIS 5.6 | SCORED | Configure WinRM service (based on management requirements)
+  ansible.windows.win_service:
+    name: WinRM
+    state: "{{ 'started' if windows_server__cis_allow_winrm else 'stopped' }}"
+    start_mode: "{{ 'auto' if windows_server__cis_allow_winrm else 'disabled' }}"
+  register: windows_server__cis_5_6_result
+  when:
+    - "'5.6' not in windows_server__cis_skip_rules"
+    - (windows_server__cis_5_6_current.stdout | trim == "Running") != (windows_server__cis_allow_winrm | bool)
+  tags:
+    - cis_5.6
+    - system_services
+    - level_1
+    - scored
+
+- name: CIS 5.6 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '5.6',
+        'rule_title': 'Windows Remote Management (WS-Management) (WinRM)',
+        'rule_section': 'System Services',
+        'severity': 'Medium',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Running' if windows_server__cis_allow_winrm else 'Stopped',
+        'current_value': windows_server__cis_5_6_current.stdout | trim,
+        'status': 'PASS' if ((windows_server__cis_5_6_current.stdout | trim == 'Running') == (windows_server__cis_allow_winrm | bool)) else 'FAIL',
+        'changed': windows_server__cis_5_6_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '5.6' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_5.6
+    - system_services
+
+# =============================================================================
+# CIS 5.7 - World Wide Web Publishing Service (W3SVC) service
+# =============================================================================
+
+- name: CIS 5.7 | AUDIT | Get current IIS World Wide Web Publishing service status
+  ansible.windows.win_shell: |
+    try {
+      $service = Get-Service -Name "W3SVC" -ErrorAction Stop
+      $service.Status
+    } catch {
+      "Not Found"
+    }
+  register: windows_server__cis_5_7_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_5.7
+    - system_services
+    - level_1
+    - audit
+
+- name: CIS 5.7 | SCORED | Configure IIS World Wide Web Publishing service
+  ansible.windows.win_service:
+    name: W3SVC
+    state: "{{ 'started' if windows_server__cis_allow_iis else 'stopped' }}"
+    start_mode: "{{ 'auto' if windows_server__cis_allow_iis else 'disabled' }}"
+  register: windows_server__cis_5_7_result
+  when:
+    - "'5.7' not in windows_server__cis_skip_rules"
+    - windows_server__cis_5_7_current.stdout | trim != "Not Found"
+    - (windows_server__cis_5_7_current.stdout | trim == "Running") != (windows_server__cis_allow_iis | bool)
+  tags:
+    - cis_5.7
+    - system_services
+    - level_1
+    - scored
+
+- name: CIS 5.7 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '5.7',
+        'rule_title': 'World Wide Web Publishing Service (W3SVC)',
+        'rule_section': 'System Services',
+        'severity': 'Medium',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Running' if windows_server__cis_allow_iis else 'Not Installed or Stopped',
+        'current_value': windows_server__cis_5_7_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_5_7_current.stdout | trim == 'Not Found' or ((windows_server__cis_5_7_current.stdout | trim == 'Running') == (windows_server__cis_allow_iis | bool))) else 'FAIL',
+        'changed': windows_server__cis_5_7_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '5.7' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_5.7
+    - system_services
+
+# =============================================================================
+# CIS 5.8 - Xbox Live Auth Manager (XblAuthManager) service
+# =============================================================================
+
+- name: CIS 5.8 | AUDIT | Get current Xbox Live Auth Manager service status
+  ansible.windows.win_shell: |
+    try {
+      $service = Get-Service -Name "XblAuthManager" -ErrorAction Stop
+      $service.Status
+    } catch {
+      "Not Found"
+    }
+  register: windows_server__cis_5_8_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_5.8
+    - system_services
+    - level_1
+    - audit
+
+- name: CIS 5.8 | SCORED | Configure Xbox Live Auth Manager service (should be disabled)
+  ansible.windows.win_service:
+    name: XblAuthManager
+    state: stopped
+    start_mode: disabled
+    force_dependent_services: true
+  register: windows_server__cis_5_8_result
+  when:
+    - "'5.8' not in windows_server__cis_skip_rules"
+    - windows_server__cis_5_8_current.stdout | trim != "Not Found"
+    - windows_server__cis_5_8_current.stdout | trim != "Stopped"
+  tags:
+    - cis_5.8
+    - system_services
+    - level_1
+    - scored
+
+- name: CIS 5.8 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '5.8',
+        'rule_title': 'Xbox Live Auth Manager (XblAuthManager)',
+        'rule_section': 'System Services',
+        'severity': 'Low',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Not Installed or Stopped',
+        'current_value': windows_server__cis_5_8_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_5_8_current.stdout | trim in ['Not Found', 'Stopped']) else 'FAIL',
+        'changed': windows_server__cis_5_8_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '5.8' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_5.8
+    - system_services
+
+# =============================================================================
+# SECTION SUMMARY - System Services
+# =============================================================================
+
+- name: CIS Section 5 | Display system services summary
+  ansible.builtin.debug:
+    msg:
+      - "=========================================="
+      - "CIS Section 5: System Services Summary"  
+      - "=========================================="
+      - "5.1 Print Spooler: {{ 'Allowed' if windows_server__cis_allow_print_spooler else 'Disabled' }} ({{ 'COMPLIANT' if ((windows_server__cis_5_1_current.stdout | trim == 'Stopped') == (not windows_server__cis_allow_print_spooler | bool)) else 'NON-COMPLIANT' }})"
+      - "5.2 Remote Registry: Disabled ({{ 'COMPLIANT' if windows_server__cis_5_2_current.stdout | trim == 'Stopped' else 'NON-COMPLIANT' }})"
+      - "5.3 Server (File Sharing): {{ 'Allowed' if windows_server__cis_allow_file_sharing else 'Disabled' }} ({{ 'COMPLIANT' if ((windows_server__cis_5_3_current.stdout | trim == 'Running') == (windows_server__cis_allow_file_sharing | bool)) else 'NON-COMPLIANT' }})"
+      - "5.4 Simple TCP/IP: {{ 'COMPLIANT' if windows_server__cis_5_4_current.stdout | trim in ['Not Found', 'Stopped'] else 'NON-COMPLIANT' }}"
+      - "5.5 Telnet: {{ 'COMPLIANT' if windows_server__cis_5_5_current.stdout | trim in ['Not Found', 'Stopped'] else 'NON-COMPLIANT' }}"
+      - "5.6 WinRM: {{ 'Allowed' if windows_server__cis_allow_winrm else 'Disabled' }} ({{ 'COMPLIANT' if ((windows_server__cis_5_6_current.stdout | trim == 'Running') == (windows_server__cis_allow_winrm | bool)) else 'NON-COMPLIANT' }})"
+      - "5.7 IIS Web Publishing: {{ 'Allowed' if windows_server__cis_allow_iis else 'Disabled' }} ({{ 'COMPLIANT' if (windows_server__cis_5_7_current.stdout | trim == 'Not Found' or ((windows_server__cis_5_7_current.stdout | trim == 'Running') == (windows_server__cis_allow_iis | bool))) else 'NON-COMPLIANT' }})"
+      - "5.8 Xbox Live Auth: {{ 'COMPLIANT' if windows_server__cis_5_8_current.stdout | trim in ['Not Found', 'Stopped'] else 'NON-COMPLIANT' }}"
+      - "=========================================="
+      - "Execution Mode: {{ 'CHECK MODE (No Changes Applied)' if ansible_check_mode else 'APPLY MODE (Changes Applied)' }}"
+      - "=========================================="
+  when: not ansible_check_mode or true
+  tags:
+    - system_services
+    - section_5
+    - summary

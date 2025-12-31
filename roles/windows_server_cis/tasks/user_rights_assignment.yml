@@ -1,0 +1,114 @@
+---
+# CIS Microsoft Windows Server 2022 Benchmark v1.0.0
+# Section 2.2: User Rights Assignment
+# Simplified Implementation - Focus on Critical Controls
+
+# =============================================================================
+# CIS 2.2.1 - Access this computer from the network (demonstration)
+# =============================================================================
+
+- name: CIS 2.2.1 | AUDIT | Get current 'Access this computer from the network' setting
+  ansible.windows.win_shell: |
+    secedit /export /cfg C:\temp\secedit_export.cfg | Out-Null
+    if (Test-Path C:\temp\secedit_export.cfg) {
+      $content = Get-Content C:\temp\secedit_export.cfg
+      $setting = ($content | Select-String "SeNetworkLogonRight").ToString().Split("=")[1].Trim()
+      $setting -replace '\*', ''
+    } else { "Unknown" }
+  register: windows_server__cis_2_2_1_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_2.2.1
+    - user_rights_assignment
+    - level_1
+    - audit
+
+- name: CIS 2.2.1 | AUDIT | Record compliance result (audit-only for demo)
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '2.2.1',
+        'rule_title': 'Access this computer from the network',
+        'rule_section': 'User Rights Assignment',
+        'severity': 'Medium',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': windows_server__cis_access_computer_from_network | join(', '),
+        'current_value': windows_server__cis_2_2_1_current.stdout | trim,
+        'status': 'AUDITED',
+        'changed': false,
+        'skip_reason': 'Complex user rights require SID mapping - simplified for demo' if '2.2.1' not in windows_server__cis_skip_rules else 'User configured skip',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_2.2.1
+    - user_rights_assignment
+
+# =============================================================================
+# CIS 2.2.9 - Debug programs (audit-only demo)
+# =============================================================================
+
+- name: CIS 2.2.9 | AUDIT | Get current 'Debug programs' setting
+  ansible.windows.win_shell: |
+    secedit /export /cfg C:\temp\secedit_export.cfg | Out-Null
+    if (Test-Path C:\temp\secedit_export.cfg) {
+      $content = Get-Content C:\temp\secedit_export.cfg
+      $setting = ($content | Select-String "SeDebugPrivilege").ToString().Split("=")[1].Trim()
+      if ($setting) { $setting -replace '\*', '' } else { "None" }
+    } else { "Unknown" }
+  register: windows_server__cis_2_2_9_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_2.2.9
+    - user_rights_assignment
+    - level_1
+    - audit
+
+- name: CIS 2.2.9 | AUDIT | Record compliance result (audit-only for demo)
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '2.2.9',
+        'rule_title': 'Debug programs',
+        'rule_section': 'User Rights Assignment',
+        'severity': 'High',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'No One',
+        'current_value': windows_server__cis_2_2_9_current.stdout | trim if (windows_server__cis_2_2_9_current.stdout | trim) else 'None',
+        'status': 'AUDITED',
+        'changed': false,
+        'skip_reason': 'Complex user rights require SID mapping - audit-only for demo' if '2.2.9' not in windows_server__cis_skip_rules else 'User configured skip',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_2.2.9
+    - user_rights_assignment
+
+# =============================================================================
+# SECTION SUMMARY - Simplified Implementation (Focus on Core Structure)
+# =============================================================================
+
+- name: CIS Section 2.2 | Display user rights assignment summary (audit-only demo)
+  ansible.builtin.debug:
+    msg:
+      - "=========================================="
+      - "CIS Section 2.2: User Rights Assignment Summary"
+      - "=========================================="
+      - "AUDIT-ONLY IMPLEMENTATION - Complex user rights require SID mapping"
+      - "2.2.1 Access Computer from Network: AUDITED"
+      - "2.2.9 Debug Programs: AUDITED"
+      - "Note: Additional 12 controls (2.2.2-2.2.8, 2.2.10-2.2.14) require full SID implementation"
+      - "This demonstrates enterprise structure and audit capability"
+      - "=========================================="
+      - "Execution Mode: {{ 'CHECK MODE (No Changes Applied)' if ansible_check_mode else 'APPLY MODE (Changes Applied)' }}"
+      - "=========================================="
+  when: not ansible_check_mode or true
+  tags:
+    - user_rights_assignment
+    - section_2
+    - summary

@@ -1,0 +1,1425 @@
+---
+# CIS Microsoft Windows Server 2022 Benchmark v1.0.0
+# Section 17: Advanced Audit Policy Configuration
+# Enterprise Implementation - Critical Audit Controls (Sample)
+
+# =============================================================================
+# CIS 17.1 - Account Logon Audit Policies
+# =============================================================================
+
+# CIS 17.1.1 - Audit Credential Validation
+- name: CIS 17.1.1 | AUDIT | Get current Credential Validation audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"Credential Validation" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_1_1_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.1.1
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.1.1 | SCORED | Configure Credential Validation audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"Credential Validation" /success:{{ windows_server__cis_audit_credential_validation_success | ternary('enable', 'disable') }} /failure:{{ windows_server__cis_audit_credential_validation_failure | ternary('enable', 'disable') }}
+  register: windows_server__cis_17_1_1_result
+  when:
+    - "'17.1.1' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_1_1_current.stdout | trim != windows_server__cis_audit_credential_validation_expected
+  tags:
+    - cis_17.1.1
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.1.1 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.1.1',
+        'rule_title': 'Audit Credential Validation',
+        'rule_section': 'Advanced Audit Policy - Account Logon',
+        'severity': 'High',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': windows_server__cis_audit_credential_validation_expected,
+        'current_value': windows_server__cis_17_1_1_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_1_1_current.stdout | trim == windows_server__cis_audit_credential_validation_expected) else 'FAIL',
+        'changed': windows_server__cis_17_1_1_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.1.1' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.1.1
+    - advanced_audit_policies
+
+# =============================================================================
+# CIS 17.2 - Account Management Audit Policies  
+# =============================================================================
+
+# CIS 17.2.1 - Audit Application Group Management
+- name: CIS 17.2.1 | AUDIT | Get current Application Group Management audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"Application Group Management" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_2_1_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.2.1
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.2.1 | SCORED | Configure Application Group Management audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"Application Group Management" /success:{{ windows_server__cis_audit_application_group_management_success | ternary('enable', 'disable') }} /failure:{{ windows_server__cis_audit_application_group_management_failure | ternary('enable', 'disable') }}
+  register: windows_server__cis_17_2_1_result
+  when:
+    - "'17.2.1' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_2_1_current.stdout | trim != windows_server__cis_audit_application_group_management_expected
+  tags:
+    - cis_17.2.1
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.2.1 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.2.1',
+        'rule_title': 'Audit Application Group Management',
+        'rule_section': 'Advanced Audit Policy - Account Management',
+        'severity': 'Medium',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': windows_server__cis_audit_application_group_management_expected,
+        'current_value': windows_server__cis_17_2_1_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_2_1_current.stdout | trim == windows_server__cis_audit_application_group_management_expected) else 'FAIL',
+        'changed': windows_server__cis_17_2_1_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.2.1' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.2.1
+    - advanced_audit_policies
+
+# CIS 17.2.2 - Audit Security Group Management
+- name: CIS 17.2.2 | AUDIT | Get current Security Group Management audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"Security Group Management" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_2_2_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.2.2
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.2.2 | SCORED | Configure Security Group Management audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"Security Group Management" /success:enable /failure:enable
+  register: windows_server__cis_17_2_2_result
+  when:
+    - "'17.2.2' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_2_2_current.stdout | trim != "Success and Failure"
+  tags:
+    - cis_17.2.2
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.2.2 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.2.2',
+        'rule_title': 'Audit Security Group Management',
+        'rule_section': 'Advanced Audit Policy - Account Management',
+        'severity': 'High',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Success and Failure',
+        'current_value': windows_server__cis_17_2_2_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_2_2_current.stdout | trim == 'Success and Failure') else 'FAIL',
+        'changed': windows_server__cis_17_2_2_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.2.2' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.2.2
+    - advanced_audit_policies
+
+# CIS 17.2.3 - Audit User Account Management
+- name: CIS 17.2.3 | AUDIT | Get current User Account Management audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"User Account Management" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_2_3_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.2.3
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.2.3 | SCORED | Configure User Account Management audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"User Account Management" /success:enable /failure:enable
+  register: windows_server__cis_17_2_3_result
+  when:
+    - "'17.2.3' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_2_3_current.stdout | trim != "Success and Failure"
+  tags:
+    - cis_17.2.3
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.2.3 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.2.3',
+        'rule_title': 'Audit User Account Management',
+        'rule_section': 'Advanced Audit Policy - Account Management',
+        'severity': 'High',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Success and Failure',
+        'current_value': windows_server__cis_17_2_3_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_2_3_current.stdout | trim == 'Success and Failure') else 'FAIL',
+        'changed': windows_server__cis_17_2_3_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.2.3' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.2.3
+    - advanced_audit_policies
+
+# =============================================================================
+# CIS 17.3 - Detailed Tracking Audit Policies
+# =============================================================================
+
+# CIS 17.3.1 - Audit PNP Activity  
+- name: CIS 17.3.1 | AUDIT | Get current PNP Activity audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"Plug and Play Events" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_3_1_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.3.1
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.3.1 | SCORED | Configure PNP Activity audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"Plug and Play Events" /success:enable
+  register: windows_server__cis_17_3_1_result
+  when:
+    - "'17.3.1' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_3_1_current.stdout | trim != "Success"
+  tags:
+    - cis_17.3.1
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.3.1 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.3.1',
+        'rule_title': 'Audit PNP Activity',
+        'rule_section': 'Advanced Audit Policy - Detailed Tracking',
+        'severity': 'Medium',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Success',
+        'current_value': windows_server__cis_17_3_1_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_3_1_current.stdout | trim == 'Success') else 'FAIL',
+        'changed': windows_server__cis_17_3_1_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.3.1' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.3.1
+    - advanced_audit_policies
+
+# CIS 17.3.2 - Audit Process Creation
+- name: CIS 17.3.2 | AUDIT | Get current Process Creation audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"Process Creation" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_3_2_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.3.2
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.3.2 | SCORED | Configure Process Creation audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"Process Creation" /success:enable
+  register: windows_server__cis_17_3_2_result
+  when:
+    - "'17.3.2' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_3_2_current.stdout | trim != "Success"
+  tags:
+    - cis_17.3.2
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.3.2 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.3.2',
+        'rule_title': 'Audit Process Creation',
+        'rule_section': 'Advanced Audit Policy - Detailed Tracking',
+        'severity': 'High',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Success',
+        'current_value': windows_server__cis_17_3_2_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_3_2_current.stdout | trim == 'Success') else 'FAIL',
+        'changed': windows_server__cis_17_3_2_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.3.2' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.3.2
+    - advanced_audit_policies
+
+# =============================================================================
+# CIS 17.5 - Logon/Logoff Audit Policies
+# =============================================================================
+
+# CIS 17.5.1 - Audit Account Lockout
+- name: CIS 17.5.1 | AUDIT | Get current Account Lockout audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"Account Lockout" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_5_1_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.5.1
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.5.1 | SCORED | Configure Account Lockout audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"Account Lockout" /success:enable /failure:enable
+  register: windows_server__cis_17_5_1_result
+  when:
+    - "'17.5.1' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_5_1_current.stdout | trim != "Success and Failure"
+  tags:
+    - cis_17.5.1
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.5.1 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.5.1',
+        'rule_title': 'Audit Account Lockout',
+        'rule_section': 'Advanced Audit Policy - Logon/Logoff',
+        'severity': 'High',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Success and Failure',
+        'current_value': windows_server__cis_17_5_1_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_5_1_current.stdout | trim == 'Success and Failure') else 'FAIL',
+        'changed': windows_server__cis_17_5_1_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.5.1' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.5.1
+    - advanced_audit_policies
+
+# CIS 17.5.2 - Audit Group Membership
+- name: CIS 17.5.2 | AUDIT | Get current Group Membership audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"Group Membership" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_5_2_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.5.2
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.5.2 | SCORED | Configure Group Membership audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"Group Membership" /success:enable
+  register: windows_server__cis_17_5_2_result
+  when:
+    - "'17.5.2' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_5_2_current.stdout | trim != "Success"
+  tags:
+    - cis_17.5.2
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.5.2 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.5.2',
+        'rule_title': 'Audit Group Membership',
+        'rule_section': 'Advanced Audit Policy - Logon/Logoff',
+        'severity': 'Medium',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Success',
+        'current_value': windows_server__cis_17_5_2_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_5_2_current.stdout | trim == 'Success') else 'FAIL',
+        'changed': windows_server__cis_17_5_2_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.5.2' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.5.2
+    - advanced_audit_policies
+
+# CIS 17.5.3 - Audit Logoff
+- name: CIS 17.5.3 | AUDIT | Get current Logoff audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"Logoff" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_5_3_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.5.3
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.5.3 | SCORED | Configure Logoff audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"Logoff" /success:enable
+  register: windows_server__cis_17_5_3_result
+  when:
+    - "'17.5.3' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_5_3_current.stdout | trim != "Success"
+  tags:
+    - cis_17.5.3
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.5.3 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.5.3',
+        'rule_title': 'Audit Logoff',
+        'rule_section': 'Advanced Audit Policy - Logon/Logoff',
+        'severity': 'Medium',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Success',
+        'current_value': windows_server__cis_17_5_3_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_5_3_current.stdout | trim == 'Success') else 'FAIL',
+        'changed': windows_server__cis_17_5_3_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.5.3' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.5.3
+    - advanced_audit_policies
+
+# CIS 17.5.4 - Audit Logon
+- name: CIS 17.5.4 | AUDIT | Get current Logon audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"Logon" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_5_4_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.5.4
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.5.4 | SCORED | Configure Logon audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"Logon" /success:enable /failure:enable
+  register: windows_server__cis_17_5_4_result
+  when:
+    - "'17.5.4' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_5_4_current.stdout | trim != "Success and Failure"
+  tags:
+    - cis_17.5.4
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.5.4 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.5.4',
+        'rule_title': 'Audit Logon',
+        'rule_section': 'Advanced Audit Policy - Logon/Logoff',
+        'severity': 'High',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Success and Failure',
+        'current_value': windows_server__cis_17_5_4_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_5_4_current.stdout | trim == 'Success and Failure') else 'FAIL',
+        'changed': windows_server__cis_17_5_4_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.5.4' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.5.4
+    - advanced_audit_policies
+
+# CIS 17.5.5 - Audit Other Logon/Logoff Events
+- name: CIS 17.5.5 | AUDIT | Get current Other Logon/Logoff Events audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"Other Logon/Logoff Events" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_5_5_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.5.5
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.5.5 | SCORED | Configure Other Logon/Logoff Events audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"Other Logon/Logoff Events" /success:enable /failure:enable
+  register: windows_server__cis_17_5_5_result
+  when:
+    - "'17.5.5' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_5_5_current.stdout | trim != "Success and Failure"
+  tags:
+    - cis_17.5.5
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.5.5 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.5.5',
+        'rule_title': 'Audit Other Logon/Logoff Events',
+        'rule_section': 'Advanced Audit Policy - Logon/Logoff',
+        'severity': 'Medium',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Success and Failure',
+        'current_value': windows_server__cis_17_5_5_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_5_5_current.stdout | trim == 'Success and Failure') else 'FAIL',
+        'changed': windows_server__cis_17_5_5_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.5.5' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.5.5
+    - advanced_audit_policies
+
+# CIS 17.5.6 - Audit Special Logon
+- name: CIS 17.5.6 | AUDIT | Get current Special Logon audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"Special Logon" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_5_6_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.5.6
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.5.6 | SCORED | Configure Special Logon audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"Special Logon" /success:enable
+  register: windows_server__cis_17_5_6_result
+  when:
+    - "'17.5.6' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_5_6_current.stdout | trim != "Success"
+  tags:
+    - cis_17.5.6
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.5.6 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.5.6',
+        'rule_title': 'Audit Special Logon',
+        'rule_section': 'Advanced Audit Policy - Logon/Logoff',
+        'severity': 'High',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Success',
+        'current_value': windows_server__cis_17_5_6_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_5_6_current.stdout | trim == 'Success') else 'FAIL',
+        'changed': windows_server__cis_17_5_6_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.5.6' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.5.6
+    - advanced_audit_policies
+
+# =============================================================================
+# CIS 17.6 - Object Access Audit Policies
+# =============================================================================
+
+# CIS 17.6.1 - Audit Detailed File Share
+- name: CIS 17.6.1 | AUDIT | Get current Detailed File Share audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"Detailed File Share" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_6_1_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.6.1
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.6.1 | SCORED | Configure Detailed File Share audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"Detailed File Share" /failure:enable
+  register: windows_server__cis_17_6_1_result
+  when:
+    - "'17.6.1' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_6_1_current.stdout | trim != "Failure"
+  tags:
+    - cis_17.6.1
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.6.1 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.6.1',
+        'rule_title': 'Audit Detailed File Share',
+        'rule_section': 'Advanced Audit Policy - Object Access',
+        'severity': 'Medium',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Failure',
+        'current_value': windows_server__cis_17_6_1_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_6_1_current.stdout | trim == 'Failure') else 'FAIL',
+        'changed': windows_server__cis_17_6_1_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.6.1' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.6.1
+    - advanced_audit_policies
+
+# CIS 17.6.2 - Audit File Share
+- name: CIS 17.6.2 | AUDIT | Get current File Share audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"File Share" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_6_2_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.6.2
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.6.2 | SCORED | Configure File Share audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"File Share" /success:enable /failure:enable
+  register: windows_server__cis_17_6_2_result
+  when:
+    - "'17.6.2' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_6_2_current.stdout | trim != "Success and Failure"
+  tags:
+    - cis_17.6.2
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.6.2 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.6.2',
+        'rule_title': 'Audit File Share',
+        'rule_section': 'Advanced Audit Policy - Object Access',
+        'severity': 'Medium',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Success and Failure',
+        'current_value': windows_server__cis_17_6_2_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_6_2_current.stdout | trim == 'Success and Failure') else 'FAIL',
+        'changed': windows_server__cis_17_6_2_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.6.2' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.6.2
+    - advanced_audit_policies
+
+# CIS 17.6.3 - Audit Other Object Access Events
+- name: CIS 17.6.3 | AUDIT | Get current Other Object Access Events audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"Other Object Access Events" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_6_3_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.6.3
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.6.3 | SCORED | Configure Other Object Access Events audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"Other Object Access Events" /success:enable /failure:enable
+  register: windows_server__cis_17_6_3_result
+  when:
+    - "'17.6.3' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_6_3_current.stdout | trim != "Success and Failure"
+  tags:
+    - cis_17.6.3
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.6.3 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.6.3',
+        'rule_title': 'Audit Other Object Access Events',
+        'rule_section': 'Advanced Audit Policy - Object Access',
+        'severity': 'Medium',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Success and Failure',
+        'current_value': windows_server__cis_17_6_3_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_6_3_current.stdout | trim == 'Success and Failure') else 'FAIL',
+        'changed': windows_server__cis_17_6_3_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.6.3' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.6.3
+    - advanced_audit_policies
+
+# CIS 17.6.4 - Audit Removable Storage
+- name: CIS 17.6.4 | AUDIT | Get current Removable Storage audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"Removable Storage" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_6_4_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.6.4
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.6.4 | SCORED | Configure Removable Storage audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"Removable Storage" /success:enable /failure:enable
+  register: windows_server__cis_17_6_4_result
+  when:
+    - "'17.6.4' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_6_4_current.stdout | trim != "Success and Failure"
+  tags:
+    - cis_17.6.4
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.6.4 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.6.4',
+        'rule_title': 'Audit Removable Storage',
+        'rule_section': 'Advanced Audit Policy - Object Access',
+        'severity': 'Medium',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Success and Failure',
+        'current_value': windows_server__cis_17_6_4_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_6_4_current.stdout | trim == 'Success and Failure') else 'FAIL',
+        'changed': windows_server__cis_17_6_4_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.6.4' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.6.4
+    - advanced_audit_policies
+
+# =============================================================================
+# CIS 17.7 - Policy Change Audit Policies
+# =============================================================================
+
+# CIS 17.7.1 - Audit Audit Policy Change
+- name: CIS 17.7.1 | AUDIT | Get current Audit Policy Change audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"Audit Policy Change" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_7_1_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.7.1
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.7.1 | SCORED | Configure Audit Policy Change audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"Audit Policy Change" /success:enable /failure:enable
+  register: windows_server__cis_17_7_1_result
+  when:
+    - "'17.7.1' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_7_1_current.stdout | trim != "Success and Failure"
+  tags:
+    - cis_17.7.1
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.7.1 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.7.1',
+        'rule_title': 'Audit Audit Policy Change',
+        'rule_section': 'Advanced Audit Policy - Policy Change',
+        'severity': 'High',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Success and Failure',
+        'current_value': windows_server__cis_17_7_1_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_7_1_current.stdout | trim == 'Success and Failure') else 'FAIL',
+        'changed': windows_server__cis_17_7_1_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.7.1' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.7.1
+    - advanced_audit_policies
+
+# CIS 17.7.2 - Audit Authentication Policy Change
+- name: CIS 17.7.2 | AUDIT | Get current Authentication Policy Change audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"Authentication Policy Change" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_7_2_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.7.2
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.7.2 | SCORED | Configure Authentication Policy Change audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"Authentication Policy Change" /success:enable
+  register: windows_server__cis_17_7_2_result
+  when:
+    - "'17.7.2' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_7_2_current.stdout | trim != "Success"
+  tags:
+    - cis_17.7.2
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.7.2 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.7.2',
+        'rule_title': 'Audit Authentication Policy Change',
+        'rule_section': 'Advanced Audit Policy - Policy Change',
+        'severity': 'High',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Success',
+        'current_value': windows_server__cis_17_7_2_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_7_2_current.stdout | trim == 'Success') else 'FAIL',
+        'changed': windows_server__cis_17_7_2_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.7.2' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.7.2
+    - advanced_audit_policies
+
+# CIS 17.7.3 - Audit Authorization Policy Change
+- name: CIS 17.7.3 | AUDIT | Get current Authorization Policy Change audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"Authorization Policy Change" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_7_3_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.7.3
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.7.3 | SCORED | Configure Authorization Policy Change audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"Authorization Policy Change" /success:enable
+  register: windows_server__cis_17_7_3_result
+  when:
+    - "'17.7.3' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_7_3_current.stdout | trim != "Success"
+  tags:
+    - cis_17.7.3
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.7.3 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.7.3',
+        'rule_title': 'Audit Authorization Policy Change',
+        'rule_section': 'Advanced Audit Policy - Policy Change',
+        'severity': 'Medium',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Success',
+        'current_value': windows_server__cis_17_7_3_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_7_3_current.stdout | trim == 'Success') else 'FAIL',
+        'changed': windows_server__cis_17_7_3_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.7.3' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.7.3
+    - advanced_audit_policies
+
+# =============================================================================
+# CIS 17.8 - Privilege Use Audit Policies
+# =============================================================================
+
+# CIS 17.8.1 - Audit Sensitive Privilege Use
+- name: CIS 17.8.1 | AUDIT | Get current Sensitive Privilege Use audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"Sensitive Privilege Use" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_8_1_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.8.1
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.8.1 | SCORED | Configure Sensitive Privilege Use audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"Sensitive Privilege Use" /success:enable /failure:enable
+  register: windows_server__cis_17_8_1_result
+  when:
+    - "'17.8.1' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_8_1_current.stdout | trim != "Success and Failure"
+  tags:
+    - cis_17.8.1
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.8.1 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.8.1',
+        'rule_title': 'Audit Sensitive Privilege Use',
+        'rule_section': 'Advanced Audit Policy - Privilege Use',
+        'severity': 'High',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Success and Failure',
+        'current_value': windows_server__cis_17_8_1_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_8_1_current.stdout | trim == 'Success and Failure') else 'FAIL',
+        'changed': windows_server__cis_17_8_1_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.8.1' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.8.1
+    - advanced_audit_policies
+
+# =============================================================================
+# CIS 17.9 - System Audit Policies
+# =============================================================================
+
+# CIS 17.9.1 - Audit IPSec Driver
+- name: CIS 17.9.1 | AUDIT | Get current IPSec Driver audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"IPSec Driver" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_9_1_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.9.1
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.9.1 | SCORED | Configure IPSec Driver audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"IPSec Driver" /success:enable /failure:enable
+  register: windows_server__cis_17_9_1_result
+  when:
+    - "'17.9.1' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_9_1_current.stdout | trim != "Success and Failure"
+  tags:
+    - cis_17.9.1
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.9.1 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.9.1',
+        'rule_title': 'Audit IPSec Driver',
+        'rule_section': 'Advanced Audit Policy - System',
+        'severity': 'Medium',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Success and Failure',
+        'current_value': windows_server__cis_17_9_1_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_9_1_current.stdout | trim == 'Success and Failure') else 'FAIL',
+        'changed': windows_server__cis_17_9_1_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.9.1' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.9.1
+    - advanced_audit_policies
+
+# CIS 17.9.2 - Audit Other System Events
+- name: CIS 17.9.2 | AUDIT | Get current Other System Events audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"Other System Events" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_9_2_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.9.2
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.9.2 | SCORED | Configure Other System Events audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"Other System Events" /success:enable /failure:enable
+  register: windows_server__cis_17_9_2_result
+  when:
+    - "'17.9.2' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_9_2_current.stdout | trim != "Success and Failure"
+  tags:
+    - cis_17.9.2
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.9.2 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.9.2',
+        'rule_title': 'Audit Other System Events',
+        'rule_section': 'Advanced Audit Policy - System',
+        'severity': 'Medium',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Success and Failure',
+        'current_value': windows_server__cis_17_9_2_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_9_2_current.stdout | trim == 'Success and Failure') else 'FAIL',
+        'changed': windows_server__cis_17_9_2_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.9.2' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.9.2
+    - advanced_audit_policies
+
+# CIS 17.9.3 - Audit Security State Change
+- name: CIS 17.9.3 | AUDIT | Get current Security State Change audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"Security State Change" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_9_3_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.9.3
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.9.3 | SCORED | Configure Security State Change audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"Security State Change" /success:enable
+  register: windows_server__cis_17_9_3_result
+  when:
+    - "'17.9.3' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_9_3_current.stdout | trim != "Success"
+  tags:
+    - cis_17.9.3
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.9.3 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.9.3',
+        'rule_title': 'Audit Security State Change',
+        'rule_section': 'Advanced Audit Policy - System',
+        'severity': 'High',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Success',
+        'current_value': windows_server__cis_17_9_3_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_9_3_current.stdout | trim == 'Success') else 'FAIL',
+        'changed': windows_server__cis_17_9_3_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.9.3' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.9.3
+    - advanced_audit_policies
+
+# CIS 17.9.4 - Audit Security System Extension
+- name: CIS 17.9.4 | AUDIT | Get current Security System Extension audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"Security System Extension" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_9_4_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.9.4
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.9.4 | SCORED | Configure Security System Extension audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"Security System Extension" /success:enable
+  register: windows_server__cis_17_9_4_result
+  when:
+    - "'17.9.4' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_9_4_current.stdout | trim != "Success"
+  tags:
+    - cis_17.9.4
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.9.4 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.9.4',
+        'rule_title': 'Audit Security System Extension',
+        'rule_section': 'Advanced Audit Policy - System',
+        'severity': 'High',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Success',
+        'current_value': windows_server__cis_17_9_4_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_9_4_current.stdout | trim == 'Success') else 'FAIL',
+        'changed': windows_server__cis_17_9_4_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.9.4' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.9.4
+    - advanced_audit_policies
+
+# CIS 17.9.5 - Audit System Integrity
+- name: CIS 17.9.5 | AUDIT | Get current System Integrity audit setting
+  ansible.windows.win_shell: |
+    try {
+      $result = auditpol /get /subcategory:"System Integrity" /r | ConvertFrom-Csv
+      $result.'Inclusion Setting'
+    } catch {
+      "Not Configured"
+    }
+  register: windows_server__cis_17_9_5_current
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+    - cis_17.9.5
+    - advanced_audit_policies
+    - level_1
+    - audit
+
+- name: CIS 17.9.5 | SCORED | Configure System Integrity audit policy
+  ansible.windows.win_shell: |
+    auditpol /set /subcategory:"System Integrity" /success:enable /failure:enable
+  register: windows_server__cis_17_9_5_result
+  when:
+    - "'17.9.5' not in windows_server__cis_skip_rules"
+    - windows_server__cis_17_9_5_current.stdout | trim != "Success and Failure"
+  tags:
+    - cis_17.9.5
+    - advanced_audit_policies
+    - level_1
+    - scored
+
+- name: CIS 17.9.5 | AUDIT | Record compliance result
+  ansible.builtin.set_fact:
+    windows_server__cis_results: >-
+      {{ windows_server__cis_results + [{
+        'rule_id': '17.9.5',
+        'rule_title': 'Audit System Integrity',
+        'rule_section': 'Advanced Audit Policy - System',
+        'severity': 'High',
+        'scored': true,
+        'level': 'Level 1',
+        'expected_value': 'Success and Failure',
+        'current_value': windows_server__cis_17_9_5_current.stdout | trim,
+        'status': 'PASS' if (windows_server__cis_17_9_5_current.stdout | trim == 'Success and Failure') else 'FAIL',
+        'changed': windows_server__cis_17_9_5_result.changed | default(false),
+        'skip_reason': 'User configured skip' if '17.9.5' in windows_server__cis_skip_rules else '',
+        'check_mode': ansible_check_mode
+      }] }}
+  tags:
+    - cis_17.9.5
+    - advanced_audit_policies
+
+# =============================================================================
+# SECTION SUMMARY - Advanced Audit Policies (Sample Implementation)
+# =============================================================================
+
+- name: CIS Section 17 | Display advanced audit policies summary
+  ansible.builtin.debug:
+    msg:
+      - "=========================================="
+      - "CIS Section 17: Advanced Audit Policy Summary"  
+      - "=========================================="
+      - "SAMPLE IMPLEMENTATION - 25 critical audit controls demonstrated"
+      - ""
+      - "Account Logon:"
+      - "17.1.1 Credential Validation: {{ windows_server__cis_17_1_1_current.stdout | trim | default('Not Configured') }}"
+      - ""
+      - "Account Management:"
+      - "17.2.1 Application Group Management: {{ windows_server__cis_17_2_1_current.stdout | trim | default('Not Configured') }}"
+      - "17.2.2 Security Group Management: {{ windows_server__cis_17_2_2_current.stdout | trim | default('Not Configured') }}"
+      - "17.2.3 User Account Management: {{ windows_server__cis_17_2_3_current.stdout | trim | default('Not Configured') }}"
+      - ""
+      - "Detailed Tracking:"
+      - "17.3.1 PNP Activity: {{ windows_server__cis_17_3_1_current.stdout | trim | default('Not Configured') }}"
+      - "17.3.2 Process Creation: {{ windows_server__cis_17_3_2_current.stdout | trim | default('Not Configured') }}"
+      - ""
+      - "Logon/Logoff:"
+      - "17.5.1 Account Lockout: {{ windows_server__cis_17_5_1_current.stdout | trim | default('Not Configured') }}"
+      - "17.5.2 Group Membership: {{ windows_server__cis_17_5_2_current.stdout | trim | default('Not Configured') }}"
+      - "17.5.3 Logoff: {{ windows_server__cis_17_5_3_current.stdout | trim | default('Not Configured') }}"
+      - "17.5.4 Logon: {{ windows_server__cis_17_5_4_current.stdout | trim | default('Not Configured') }}"
+      - "17.5.5 Other Logon/Logoff Events: {{ windows_server__cis_17_5_5_current.stdout | trim | default('Not Configured') }}"
+      - "17.5.6 Special Logon: {{ windows_server__cis_17_5_6_current.stdout | trim | default('Not Configured') }}"
+      - ""
+      - "Object Access:"
+      - "17.6.1 Detailed File Share: {{ windows_server__cis_17_6_1_current.stdout | trim | default('Not Configured') }}"
+      - "17.6.2 File Share: {{ windows_server__cis_17_6_2_current.stdout | trim | default('Not Configured') }}"
+      - "17.6.3 Other Object Access Events: {{ windows_server__cis_17_6_3_current.stdout | trim | default('Not Configured') }}"
+      - "17.6.4 Removable Storage: {{ windows_server__cis_17_6_4_current.stdout | trim | default('Not Configured') }}"
+      - ""
+      - "Policy Change:"
+      - "17.7.1 Audit Policy Change: {{ windows_server__cis_17_7_1_current.stdout | trim | default('Not Configured') }}"
+      - "17.7.2 Authentication Policy Change: {{ windows_server__cis_17_7_2_current.stdout | trim | default('Not Configured') }}"
+      - "17.7.3 Authorization Policy Change: {{ windows_server__cis_17_7_3_current.stdout | trim | default('Not Configured') }}"
+      - ""
+      - "Privilege Use:"
+      - "17.8.1 Sensitive Privilege Use: {{ windows_server__cis_17_8_1_current.stdout | trim | default('Not Configured') }}"
+      - ""
+      - "System:"
+      - "17.9.1 IPSec Driver: {{ windows_server__cis_17_9_1_current.stdout | trim | default('Not Configured') }}"
+      - "17.9.2 Other System Events: {{ windows_server__cis_17_9_2_current.stdout | trim | default('Not Configured') }}"
+      - "17.9.3 Security State Change: {{ windows_server__cis_17_9_3_current.stdout | trim | default('Not Configured') }}"
+      - "17.9.4 Security System Extension: {{ windows_server__cis_17_9_4_current.stdout | trim | default('Not Configured') }}"
+      - "17.9.5 System Integrity: {{ windows_server__cis_17_9_5_current.stdout | trim | default('Not Configured') }}"
+      - ""
+      - "Note: Additional 20 audit controls require implementation"
+      - "This demonstrates enterprise audit policy automation"
+      - "=========================================="
+      - "Execution Mode: {{ 'CHECK MODE (No Changes Applied)' if ansible_check_mode else 'APPLY MODE (Changes Applied)' }}"
+      - "=========================================="
+  when: not ansible_check_mode or true
+  tags:
+    - advanced_audit_policies
+    - section_17
+    - summary

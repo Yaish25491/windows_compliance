@@ -1,0 +1,24 @@
+---
+# =============================================================================
+# DISA STIG V-254451 through V-254500 - User Rights Assignment
+# User Privileges and Access Controls for Government Security
+# =============================================================================
+
+- name: STIG | USER_RIGHTS | Configure user rights assignment (placeholder)
+  ansible.builtin.debug:
+    msg:
+      - "==========================================="
+      - "DISA STIG User Rights Assignment Configuration"
+      - "==========================================="
+      - "This section implements STIG V-254451 through V-254500"
+      - "User rights assignment controls for secure access management"
+      - "Implementation in progress - placeholder for full controls"
+      - "==========================================="
+  tags:
+    - user_rights
+    - stig
+
+- name: STIG | Update compliance tracking for user rights (placeholder)
+  ansible.builtin.set_fact:
+    windows_server__stig_total_controls: "{{ windows_server__stig_total_controls | int + 0 }}"
+    windows_server__stig_passed_controls: "{{ windows_server__stig_passed_controls | int + 0 }}"

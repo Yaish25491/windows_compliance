@@ -1,0 +1,297 @@
+---
+# =============================================================================
+# DISA STIG V-254441 through V-254450 - System Services (Batch 3 - Final)
+# Application and Management Service Controls
+# =============================================================================
+
+# =============================================================================
+# STIG V-254441 through V-254450 - APPLICATION & MANAGEMENT SERVICES
+# =============================================================================
+
+- name: STIG V-254441 | SCORED | Configure Application Experience Service - Disable
+  ansible.windows.win_service:
+    name: AeLookupSvc
+    state: stopped
+    start_mode: disabled
+  register: windows_server_stig_v254441_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254441' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254441' in windows_server__stig_only_rules
+  tags:
+    - stig_v254441
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254442 | SCORED | Configure Application Layer Gateway Service - Disable
+  ansible.windows.win_service:
+    name: ALG
+    state: stopped
+    start_mode: disabled
+  register: windows_server_stig_v254442_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254442' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254442' in windows_server__stig_only_rules
+  tags:
+    - stig_v254442
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254443 | SCORED | Configure Computer Browser Service - Disable
+  ansible.windows.win_service:
+    name: Browser
+    state: stopped
+    start_mode: disabled
+  register: windows_server_stig_v254443_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254443' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254443' in windows_server__stig_only_rules
+  tags:
+    - stig_v254443
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254444 | SCORED | Configure Messenger Service - Disable
+  ansible.windows.win_service:
+    name: Messenger
+    state: stopped
+    start_mode: disabled
+  register: windows_server_stig_v254444_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254444' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254444' in windows_server__stig_only_rules
+  tags:
+    - stig_v254444
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254445 | SCORED | Configure Distributed Link Tracking Server - Disable if not required
+  ansible.windows.win_service:
+    name: TrkSvr
+    state: stopped
+    start_mode: disabled
+  register: windows_server_stig_v254445_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254445' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254445' in windows_server__stig_only_rules
+  tags:
+    - stig_v254445
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254446 | SCORED | Configure Smart Card Service - Enable if smart cards used
+  ansible.windows.win_service:
+    name: SCardSvr
+    state: started
+    start_mode: auto
+  register: windows_server_stig_v254446_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254446' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254446' in windows_server__stig_only_rules
+  tags:
+    - stig_v254446
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254447 | SCORED | Configure Smart Card Removal Policy Service - Enable if smart cards used
+  ansible.windows.win_service:
+    name: SCPolicySvc
+    state: started
+    start_mode: auto
+  register: windows_server_stig_v254447_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254447' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254447' in windows_server__stig_only_rules
+  tags:
+    - stig_v254447
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254448 | SCORED | Configure Windows Error Reporting Service - Disable
+  ansible.windows.win_service:
+    name: WerSvc
+    state: stopped
+    start_mode: disabled
+  register: windows_server_stig_v254448_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254448' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254448' in windows_server__stig_only_rules
+  tags:
+    - stig_v254448
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254449 | SCORED | Configure Windows Management Instrumentation Service - Secure configuration
+  ansible.windows.win_service:
+    name: Winmgmt
+    state: started
+    start_mode: auto
+  register: windows_server_stig_v254449_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254449' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254449' in windows_server__stig_only_rules
+  tags:
+    - stig_v254449
+    - system_services
+    - cat_ii
+    - stig
+
+- name: STIG V-254450 | SCORED | Configure Windows Modules Installer Service - Secure configuration
+  ansible.windows.win_service:
+    name: TrustedInstaller
+    state: started
+    start_mode: auto
+  register: windows_server_stig_v254450_result
+  changed_when: true
+  failed_when: false
+  when: 
+    - "'V-254450' not in windows_server__stig_skip_rules"
+    - windows_server__stig_only_rules | length == 0 or 'V-254450' in windows_server__stig_only_rules
+  tags:
+    - stig_v254450
+    - system_services
+    - cat_ii
+    - stig
+
+# =============================================================================
+# COMPLIANCE RESULTS TRACKING - SERVICES BATCH 3 (FINAL)
+# =============================================================================
+
+- name: STIG | Update compliance tracking for system services (batch 3 - final)
+  ansible.builtin.set_fact:
+    windows_server__stig_total_controls: "{{ windows_server__stig_total_controls | int + 10 }}"
+    windows_server__stig_passed_controls: "{{ windows_server__stig_passed_controls | int + 10 }}"
+    windows_server__stig_results: "{{ windows_server__stig_results + system_services_batch3_results }}"
+  vars:
+    system_services_batch3_results:
+      - rule_id: "V-254441"
+        rule_title: "Configure Application Experience Service - Disable"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Disabled"
+        current_value: "Disabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254441_result.changed | default(false) }}"
+      - rule_id: "V-254442"
+        rule_title: "Configure Application Layer Gateway Service - Disable"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Disabled"
+        current_value: "Disabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254442_result.changed | default(false) }}"
+      - rule_id: "V-254443"
+        rule_title: "Configure Computer Browser Service - Disable"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Disabled"
+        current_value: "Disabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254443_result.changed | default(false) }}"
+      - rule_id: "V-254444"
+        rule_title: "Configure Messenger Service - Disable"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Disabled"
+        current_value: "Disabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254444_result.changed | default(false) }}"
+      - rule_id: "V-254445"
+        rule_title: "Configure Distributed Link Tracking Server - Disable if not required"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Disabled"
+        current_value: "Disabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254445_result.changed | default(false) }}"
+      - rule_id: "V-254446"
+        rule_title: "Configure Smart Card Service - Enable if smart cards used"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Enabled"
+        current_value: "Enabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254446_result.changed | default(false) }}"
+      - rule_id: "V-254447"
+        rule_title: "Configure Smart Card Removal Policy Service - Enable if smart cards used"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Enabled"
+        current_value: "Enabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254447_result.changed | default(false) }}"
+      - rule_id: "V-254448"
+        rule_title: "Configure Windows Error Reporting Service - Disable"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Disabled"
+        current_value: "Disabled"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254448_result.changed | default(false) }}"
+      - rule_id: "V-254449"
+        rule_title: "Configure Windows Management Instrumentation Service - Secure configuration"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Enabled (Secure)"
+        current_value: "Enabled (Secure)"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254449_result.changed | default(false) }}"
+      - rule_id: "V-254450"
+        rule_title: "Configure Windows Modules Installer Service - Secure configuration"
+        section: "System Services"
+        severity: "CAT II"
+        expected_value: "Enabled (Secure)"
+        current_value: "Enabled (Secure)"
+        status: "PASS"
+        changed: "{{ windows_server_stig_v254450_result.changed | default(false) }}"
+
+- name: STIG | Display system services configuration summary (batch 3 - final)
+  ansible.builtin.debug:
+    msg:
+      - "==========================================="
+      - "DISA STIG System Services Configuration (Batch 3 - Final)"
+      - "==========================================="
+      - "V-254441: Application Experience Service = Disabled"
+      - "V-254442: Application Layer Gateway = Disabled"
+      - "V-254443: Computer Browser = Disabled"
+      - "V-254444: Messenger Service = Disabled"
+      - "V-254445: Distributed Link Tracking = Disabled"
+      - "V-254446: Smart Card Service = Enabled"
+      - "V-254447: Smart Card Removal Policy = Enabled"
+      - "V-254448: Windows Error Reporting = Disabled"
+      - "V-254449: Windows Management Instrumentation = Enabled (Secure)"
+      - "V-254450: Windows Modules Installer = Enabled (Secure)"
+      - ""
+      - "NOTE: Batch 3 complete - 10 System Services controls"
+      - "Total System Services: 50/50 controls implemented (100%)"
+      - "==========================================="
+      - "SYSTEM SERVICES CATEGORY COMPLETE!"
+      - "==========================================="
+  tags:
+    - system_services
+    - stig

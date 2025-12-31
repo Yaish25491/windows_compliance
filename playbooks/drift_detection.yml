@@ -1,0 +1,27 @@
+---
+# Playbook for Story 2: Detecting Configuration Drift
+# Non-intrusive scan to detect drift from CIS baseline
+
+- name: Detect configuration drift from CIS baseline
+  hosts: windows
+  gather_facts: true
+  vars:
+    cis_check_mode: true
+    cis_apply_fixes: false
+    cis_baseline: "windows_server_2022"
+    cis_level: "level_1"
+    cis_generate_report: true
+    cis_report_format: "json"
+    cis_report_path: "/tmp/cis_drift_report"
+
+  tasks:
+    - name: Run CIS compliance check (read-only) 
+      include_role:
+        name: ansible.windows_compliance.windows_server_cis
+
+    - name: Display drift detection summary 
+      debug:
+        msg:
+          - "Configuration drift scan completed"
+          - "Report generated at: {{ cis_report_path }}"
+          - "Check mode: {{ cis_check_mode }}"
