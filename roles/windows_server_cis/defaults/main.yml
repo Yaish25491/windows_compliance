@@ -54,6 +54,8 @@ windows_server__cis_categories:
   - "advanced_audit_policies"  # CIS 17.x
   - "event_log"               # CIS 17.9.x
   - "administrative_templates" # CIS 18.x
+  - "windows_firewall"        # CIS 9.x
+  - "additional_registry"     # CIS 19.x
 
 # Compliance scoring (for enterprise reporting)
 windows_server__cis_compliance_threshold: 100  # % - fail role if below threshold
@@ -421,3 +423,17 @@ windows_server_cis_services_to_disable:
   - "Wecsvc"           # Windows Event Collector
   - "WSearch"          # Windows Search
   - "TermService"      # Remote Desktop Services
+
+# =============================================================================
+# CIS Section 19 - Additional Registry Settings Configuration
+# =============================================================================
+
+# 19.1 Computer Configuration Additional Settings
+windows_server__cis_ipv6_disabled_components: 255  # 0=enabled, 32=prefer IPv4, 255=disabled
+windows_server__cis_winrm_allow_auto_config: true  # Allow WinRM auto-configuration (required for Ansible)
+windows_server__cis_windows_update_au_options: 4   # 0=disabled, 2=notify, 3=auto download, 4=auto install
+windows_server__cis_enable_credential_guard: true  # Enable Windows Defender Credential Guard
+
+# 19.2 Security Features Configuration
+windows_server__cis_powershell_execution_policy: "RemoteSigned"  # Restricted, AllSigned, RemoteSigned, Unrestricted
+windows_server__cis_powershell_enable_module_logging: true       # Enable PowerShell module logging

@@ -126,6 +126,26 @@
     - section_18
     - cis
 
+- name: CIS | Section 9 - Windows Firewall with Advanced Security
+  ansible.builtin.include_tasks: windows_firewall.yml
+  when:
+    - "'windows_firewall' in windows_server__cis_categories"
+    - "windows_server__cis_only_rules | length == 0 or windows_server__cis_only_rules | select('match', '^9\\.*') | length > 0"
+  tags:
+    - windows_firewall
+    - section_9
+    - cis
+
+- name: CIS | Section 19 - Additional Registry Settings
+  ansible.builtin.include_tasks: additional_registry_settings.yml
+  when:
+    - "'additional_registry' in windows_server__cis_categories"
+    - "windows_server__cis_only_rules | length == 0 or windows_server__cis_only_rules | select('match', '^19\\.*') | length > 0"
+  tags:
+    - additional_registry
+    - section_19
+    - cis
+
 # =============================================================================
 # COMPLIANCE REPORTING AND VALIDATION
 # =============================================================================
