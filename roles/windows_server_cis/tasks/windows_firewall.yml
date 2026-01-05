@@ -8,31 +8,24 @@
 # =============================================================================
 
 # CIS 9.1.1 - Windows Firewall: Domain: Firewall state
-- name: CIS 9.1.1 | AUDIT | Get current Domain firewall state
-  ansible.windows.win_shell: |
-    netsh advfirewall show domainprofile state
-  register: windows_server__cis_9_1_1_current_raw
-  changed_when: false
+- name: CIS 9.1.1 | AUDIT | Get current firewall facts
+  ansible.builtin.setup:
+    filter: ansible_firewall*
+  register: windows_server__cis_firewall_facts
   tags:
     - cis_9.1.1
     - windows_firewall
     - level_1
     - audit
 
-- name: CIS 9.1.1 | FACT | Parse Domain firewall state
-  ansible.builtin.set_fact:
-    windows_server__cis_9_1_1_current: "{{ 'On' if 'State  On' in windows_server__cis_9_1_1_current_raw.stdout else 'Off' }}"
-  tags:
-    - cis_9.1.1
-    - windows_firewall
-
 - name: CIS 9.1.1 | SCORED | Configure Domain firewall state (should be On)
-  ansible.windows.win_shell: |
-    netsh advfirewall set domainprofile state {{ windows_server_cis_windows_firewall_domain_firewall_state | lower }}
+  ansible.windows.win_firewall:
+    profiles: domain
+    state: "{{ 'enabled' if windows_server_cis_windows_firewall_domain_firewall_state == 'On' else 'disabled' }}"
   register: windows_server__cis_9_1_1_result
   when:
     - "'9.1.1' not in windows_server__cis_skip_rules"
-    - windows_server__cis_9_1_1_current != windows_server_cis_windows_firewall_domain_firewall_state
+    - ansible_firewall.domain.enabled | default(false) != (windows_server_cis_windows_firewall_domain_firewall_state == 'On')
   tags:
     - cis_9.1.1
     - windows_firewall
@@ -50,8 +43,8 @@
         'scored': true,
         'level': 'Level 1',
         'expected_value': windows_server_cis_windows_firewall_domain_firewall_state,
-        'current_value': windows_server__cis_9_1_1_current,
-        'status': 'PASS' if (windows_server__cis_9_1_1_current == windows_server_cis_windows_firewall_domain_firewall_state) else 'FAIL',
+        'current_value': ansible_firewall.domain.enabled | default(false) | ternary('On', 'Off'),
+        'status': 'PASS' if (ansible_firewall.domain.enabled | default(false) == (windows_server_cis_windows_firewall_domain_firewall_state == 'On')) else 'FAIL',
         'changed': windows_server__cis_9_1_1_result.changed | default(false),
         'skip_reason': 'User configured skip' if '9.1.1' in windows_server__cis_skip_rules else '',
         'check_mode': ansible_check_mode
@@ -60,34 +53,19 @@
     - cis_9.1.1
     - windows_firewall
 
-# CIS 9.1.2 - Windows Firewall: Domain: Inbound connections
-- name: CIS 9.1.2 | AUDIT | Get current Domain inbound connections setting
-  ansible.windows.win_shell: |
-    netsh advfirewall show domainprofile firewallpolicy
-  register: windows_server__cis_9_1_2_current_raw
-  changed_when: false
-  tags:
-    - cis_9.1.2
-    - windows_firewall
-    - level_1
-    - audit
-
-- name: CIS 9.1.2 | FACT | Parse Domain inbound connections setting
-  ansible.builtin.set_fact:
-    windows_server__cis_9_1_2_current: "{{ 'Block' if 'Inbound  Block' in windows_server__cis_9_1_2_current_raw.stdout else 'Allow' }}"
-  tags:
-    - cis_9.1.2
-    - windows_firewall
-
-- name: CIS 9.1.2 | SCORED | Configure Domain inbound connections (should be Block)
-  ansible.windows.win_shell: |
-    netsh advfirewall set domainprofile firewallpolicy blockinbound,allowoutbound
-  register: windows_server__cis_9_1_2_result
+# CIS 9.1.2 & 9.1.3 - Windows Firewall: Domain: Inbound and Outbound connections
+- name: CIS 9.1.2 & 9.1.3 | SCORED | Configure Domain firewall policies (consolidated)
+  ansible.windows.win_firewall:
+    profiles: domain
+    state: enabled
+    inbound_action: "{{ 'block' if windows_server_cis_windows_firewall_domain_inbound_connections == 'Block' else 'allow' }}"
+    outbound_action: "{{ 'allow' if windows_server_cis_windows_firewall_domain_outbound_connections == 'Allow' else 'block' }}"
+  register: windows_server__cis_9_1_2_3_result
   when:
-    - "'9.1.2' not in windows_server__cis_skip_rules"
-    - windows_server__cis_9_1_2_current != windows_server_cis_windows_firewall_domain_inbound_connections
+    - "'9.1.2' not in windows_server__cis_skip_rules or '9.1.3' not in windows_server__cis_skip_rules"
   tags:
     - cis_9.1.2
+    - cis_9.1.3
     - windows_firewall
     - level_1
     - scored
@@ -103,47 +81,15 @@
         'scored': true,
         'level': 'Level 1',
         'expected_value': windows_server_cis_windows_firewall_domain_inbound_connections,
-        'current_value': windows_server__cis_9_1_2_current,
-        'status': 'PASS' if (windows_server__cis_9_1_2_current == windows_server_cis_windows_firewall_domain_inbound_connections) else 'FAIL',
-        'changed': windows_server__cis_9_1_2_result.changed | default(false),
+        'current_value': ansible_firewall.domain.inbound_action | default('Allow') | title,
+        'status': 'PASS' if (ansible_firewall.domain.inbound_action | default('Allow') | title == windows_server_cis_windows_firewall_domain_inbound_connections) else 'FAIL',
+        'changed': windows_server__cis_9_1_2_3_result.changed | default(false),
         'skip_reason': 'User configured skip' if '9.1.2' in windows_server__cis_skip_rules else '',
         'check_mode': ansible_check_mode
       }] }}
   tags:
     - cis_9.1.2
     - windows_firewall
-
-# CIS 9.1.3 - Windows Firewall: Domain: Outbound connections  
-- name: CIS 9.1.3 | AUDIT | Get current Domain outbound connections setting
-  ansible.windows.win_shell: |
-    netsh advfirewall show domainprofile firewallpolicy
-  register: windows_server__cis_9_1_3_current_raw
-  changed_when: false
-  tags:
-    - cis_9.1.3
-    - windows_firewall
-    - level_1
-    - audit
-
-- name: CIS 9.1.3 | FACT | Parse Domain outbound connections setting
-  ansible.builtin.set_fact:
-    windows_server__cis_9_1_3_current: "{{ 'Allow' if 'Outbound  Allow' in windows_server__cis_9_1_3_current_raw.stdout else 'Block' }}"
-  tags:
-    - cis_9.1.3
-    - windows_firewall
-
-- name: CIS 9.1.3 | SCORED | Configure Domain outbound connections (should be Allow)
-  ansible.windows.win_shell: |
-    netsh advfirewall set domainprofile firewallpolicy blockinbound,allowoutbound
-  register: windows_server__cis_9_1_3_result
-  when:
-    - "'9.1.3' not in windows_server__cis_skip_rules"
-    - windows_server__cis_9_1_3_current != windows_server_cis_windows_firewall_domain_outbound_connections
-  tags:
-    - cis_9.1.3
-    - windows_firewall
-    - level_1
-    - scored
 
 - name: CIS 9.1.3 | AUDIT | Record compliance result
   ansible.builtin.set_fact:
@@ -156,9 +102,9 @@
         'scored': true,
         'level': 'Level 1',
         'expected_value': windows_server_cis_windows_firewall_domain_outbound_connections,
-        'current_value': windows_server__cis_9_1_3_current,
-        'status': 'PASS' if (windows_server__cis_9_1_3_current == windows_server_cis_windows_firewall_domain_outbound_connections) else 'FAIL',
-        'changed': windows_server__cis_9_1_3_result.changed | default(false),
+        'current_value': ansible_firewall.domain.outbound_action | default('Allow') | title,
+        'status': 'PASS' if (ansible_firewall.domain.outbound_action | default('Allow') | title == windows_server_cis_windows_firewall_domain_outbound_connections) else 'FAIL',
+        'changed': windows_server__cis_9_1_2_3_result.changed | default(false),
         'skip_reason': 'User configured skip' if '9.1.3' in windows_server__cis_skip_rules else '',
         'check_mode': ansible_check_mode
       }] }}
@@ -268,34 +214,18 @@
 # CIS 9.2 - Private Profile
 # =============================================================================
 
-# CIS 9.2.1 - Windows Firewall: Private: Firewall state
-- name: CIS 9.2.1 | AUDIT | Get current Private firewall state
-  ansible.windows.win_shell: |
-    netsh advfirewall show privateprofile state
-  register: windows_server__cis_9_2_1_current_raw
-  changed_when: false
-  tags:
-    - cis_9.2.1
-    - windows_firewall
-    - level_1
-    - audit
-
-- name: CIS 9.2.1 | FACT | Parse Private firewall state
-  ansible.builtin.set_fact:
-    windows_server__cis_9_2_1_current: "{{ 'On' if 'State  On' in windows_server__cis_9_2_1_current_raw.stdout else 'Off' }}"
-  tags:
-    - cis_9.2.1
-    - windows_firewall
-
-- name: CIS 9.2.1 | SCORED | Configure Private firewall state (should be On)
-  ansible.windows.win_shell: |
-    netsh advfirewall set privateprofile state {{ windows_server_cis_windows_firewall_private_firewall_state | lower }}
-  register: windows_server__cis_9_2_1_result
+# CIS 9.2.1 & 9.2.2 - Windows Firewall: Private Profile (consolidated)
+- name: CIS 9.2 | SCORED | Configure Private profile firewall (consolidated)
+  ansible.windows.win_firewall:
+    profiles: private
+    state: "{{ 'enabled' if windows_server_cis_windows_firewall_private_firewall_state == 'On' else 'disabled' }}"
+    inbound_action: "{{ 'block' if windows_server_cis_windows_firewall_private_inbound_connections == 'Block' else 'allow' }}"
+  register: windows_server__cis_9_2_result
   when:
-    - "'9.2.1' not in windows_server__cis_skip_rules"
-    - windows_server__cis_9_2_1_current != windows_server_cis_windows_firewall_private_firewall_state
+    - "'9.2.1' not in windows_server__cis_skip_rules or '9.2.2' not in windows_server__cis_skip_rules"
   tags:
     - cis_9.2.1
+    - cis_9.2.2
     - windows_firewall
     - level_1
     - scored
@@ -311,47 +241,15 @@
         'scored': true,
         'level': 'Level 1',
         'expected_value': windows_server_cis_windows_firewall_private_firewall_state,
-        'current_value': windows_server__cis_9_2_1_current,
-        'status': 'PASS' if (windows_server__cis_9_2_1_current == windows_server_cis_windows_firewall_private_firewall_state) else 'FAIL',
-        'changed': windows_server__cis_9_2_1_result.changed | default(false),
+        'current_value': ansible_firewall.private.enabled | default(false) | ternary('On', 'Off'),
+        'status': 'PASS' if (ansible_firewall.private.enabled | default(false) == (windows_server_cis_windows_firewall_private_firewall_state == 'On')) else 'FAIL',
+        'changed': windows_server__cis_9_2_result.changed | default(false),
         'skip_reason': 'User configured skip' if '9.2.1' in windows_server__cis_skip_rules else '',
         'check_mode': ansible_check_mode
       }] }}
   tags:
     - cis_9.2.1
     - windows_firewall
-
-# CIS 9.2.2 - Windows Firewall: Private: Inbound connections
-- name: CIS 9.2.2 | AUDIT | Get current Private inbound connections setting
-  ansible.windows.win_shell: |
-    netsh advfirewall show privateprofile firewallpolicy
-  register: windows_server__cis_9_2_2_current_raw
-  changed_when: false
-  tags:
-    - cis_9.2.2
-    - windows_firewall
-    - level_1
-    - audit
-
-- name: CIS 9.2.2 | FACT | Parse Private inbound connections setting
-  ansible.builtin.set_fact:
-    windows_server__cis_9_2_2_current: "{{ 'Block' if 'Inbound  Block' in windows_server__cis_9_2_2_current_raw.stdout else 'Allow' }}"
-  tags:
-    - cis_9.2.2
-    - windows_firewall
-
-- name: CIS 9.2.2 | SCORED | Configure Private inbound connections (should be Block)
-  ansible.windows.win_shell: |
-    netsh advfirewall set privateprofile firewallpolicy blockinbound,allowoutbound
-  register: windows_server__cis_9_2_2_result
-  when:
-    - "'9.2.2' not in windows_server__cis_skip_rules"
-    - windows_server__cis_9_2_2_current != windows_server_cis_windows_firewall_private_inbound_connections
-  tags:
-    - cis_9.2.2
-    - windows_firewall
-    - level_1
-    - scored
 
 - name: CIS 9.2.2 | AUDIT | Record compliance result
   ansible.builtin.set_fact:
@@ -364,9 +262,9 @@
         'scored': true,
         'level': 'Level 1',
         'expected_value': windows_server_cis_windows_firewall_private_inbound_connections,
-        'current_value': windows_server__cis_9_2_2_current,
-        'status': 'PASS' if (windows_server__cis_9_2_2_current == windows_server_cis_windows_firewall_private_inbound_connections) else 'FAIL',
-        'changed': windows_server__cis_9_2_2_result.changed | default(false),
+        'current_value': ansible_firewall.private.inbound_action | default('Allow') | title,
+        'status': 'PASS' if (ansible_firewall.private.inbound_action | default('Allow') | title == windows_server_cis_windows_firewall_private_inbound_connections) else 'FAIL',
+        'changed': windows_server__cis_9_2_result.changed | default(false),
         'skip_reason': 'User configured skip' if '9.2.2' in windows_server__cis_skip_rules else '',
         'check_mode': ansible_check_mode
       }] }}
@@ -378,34 +276,18 @@
 # CIS 9.3 - Public Profile
 # =============================================================================
 
-# CIS 9.3.1 - Windows Firewall: Public: Firewall state
-- name: CIS 9.3.1 | AUDIT | Get current Public firewall state
-  ansible.windows.win_shell: |
-    netsh advfirewall show publicprofile state
-  register: windows_server__cis_9_3_1_current_raw
-  changed_when: false
-  tags:
-    - cis_9.3.1
-    - windows_firewall
-    - level_1
-    - audit
-
-- name: CIS 9.3.1 | FACT | Parse Public firewall state
-  ansible.builtin.set_fact:
-    windows_server__cis_9_3_1_current: "{{ 'On' if 'State  On' in windows_server__cis_9_3_1_current_raw.stdout else 'Off' }}"
-  tags:
-    - cis_9.3.1
-    - windows_firewall
-
-- name: CIS 9.3.1 | SCORED | Configure Public firewall state (should be On)
-  ansible.windows.win_shell: |
-    netsh advfirewall set publicprofile state {{ windows_server_cis_windows_firewall_public_firewall_state | lower }}
-  register: windows_server__cis_9_3_1_result
+# CIS 9.3.1 & 9.3.2 - Windows Firewall: Public Profile (consolidated)
+- name: CIS 9.3 | SCORED | Configure Public profile firewall (consolidated)
+  ansible.windows.win_firewall:
+    profiles: public
+    state: "{{ 'enabled' if windows_server_cis_windows_firewall_public_firewall_state == 'On' else 'disabled' }}"
+    inbound_action: "{{ 'block' if windows_server_cis_windows_firewall_public_inbound_connections == 'Block' else 'allow' }}"
+  register: windows_server__cis_9_3_result
   when:
-    - "'9.3.1' not in windows_server__cis_skip_rules"
-    - windows_server__cis_9_3_1_current != windows_server_cis_windows_firewall_public_firewall_state
+    - "'9.3.1' not in windows_server__cis_skip_rules or '9.3.2' not in windows_server__cis_skip_rules"
   tags:
     - cis_9.3.1
+    - cis_9.3.2
     - windows_firewall
     - level_1
     - scored
@@ -421,47 +303,15 @@
         'scored': true,
         'level': 'Level 1',
         'expected_value': windows_server_cis_windows_firewall_public_firewall_state,
-        'current_value': windows_server__cis_9_3_1_current,
-        'status': 'PASS' if (windows_server__cis_9_3_1_current == windows_server_cis_windows_firewall_public_firewall_state) else 'FAIL',
-        'changed': windows_server__cis_9_3_1_result.changed | default(false),
+        'current_value': ansible_firewall.public.enabled | default(false) | ternary('On', 'Off'),
+        'status': 'PASS' if (ansible_firewall.public.enabled | default(false) == (windows_server_cis_windows_firewall_public_firewall_state == 'On')) else 'FAIL',
+        'changed': windows_server__cis_9_3_result.changed | default(false),
         'skip_reason': 'User configured skip' if '9.3.1' in windows_server__cis_skip_rules else '',
         'check_mode': ansible_check_mode
       }] }}
   tags:
     - cis_9.3.1
     - windows_firewall
-
-# CIS 9.3.2 - Windows Firewall: Public: Inbound connections
-- name: CIS 9.3.2 | AUDIT | Get current Public inbound connections setting
-  ansible.windows.win_shell: |
-    netsh advfirewall show publicprofile firewallpolicy
-  register: windows_server__cis_9_3_2_current_raw
-  changed_when: false
-  tags:
-    - cis_9.3.2
-    - windows_firewall
-    - level_1
-    - audit
-
-- name: CIS 9.3.2 | FACT | Parse Public inbound connections setting
-  ansible.builtin.set_fact:
-    windows_server__cis_9_3_2_current: "{{ 'Block' if 'Inbound  Block' in windows_server__cis_9_3_2_current_raw.stdout else 'Allow' }}"
-  tags:
-    - cis_9.3.2
-    - windows_firewall
-
-- name: CIS 9.3.2 | SCORED | Configure Public inbound connections (should be Block)
-  ansible.windows.win_shell: |
-    netsh advfirewall set publicprofile firewallpolicy blockinbound,allowoutbound
-  register: windows_server__cis_9_3_2_result
-  when:
-    - "'9.3.2' not in windows_server__cis_skip_rules"
-    - windows_server__cis_9_3_2_current != windows_server_cis_windows_firewall_public_inbound_connections
-  tags:
-    - cis_9.3.2
-    - windows_firewall
-    - level_1
-    - scored
 
 - name: CIS 9.3.2 | AUDIT | Record compliance result
   ansible.builtin.set_fact:
@@ -474,9 +324,9 @@
         'scored': true,
         'level': 'Level 1',
         'expected_value': windows_server_cis_windows_firewall_public_inbound_connections,
-        'current_value': windows_server__cis_9_3_2_current,
-        'status': 'PASS' if (windows_server__cis_9_3_2_current == windows_server_cis_windows_firewall_public_inbound_connections) else 'FAIL',
-        'changed': windows_server__cis_9_3_2_result.changed | default(false),
+        'current_value': ansible_firewall.public.inbound_action | default('Allow') | title,
+        'status': 'PASS' if (ansible_firewall.public.inbound_action | default('Allow') | title == windows_server_cis_windows_firewall_public_inbound_connections) else 'FAIL',
+        'changed': windows_server__cis_9_3_result.changed | default(false),
         'skip_reason': 'User configured skip' if '9.3.2' in windows_server__cis_skip_rules else '',
         'check_mode': ansible_check_mode
       }] }}
@@ -497,19 +347,19 @@
       - "ENTERPRISE IMPLEMENTATION - 10 critical firewall controls"
       - ""
       - "Domain Profile:"
-      - "9.1.1 Firewall State: {{ 'COMPLIANT' if windows_server__cis_9_1_1_current == 'On' else 'NON-COMPLIANT' }}"
-      - "9.1.2 Inbound Connections: {{ 'COMPLIANT' if windows_server__cis_9_1_2_current == 'Block' else 'NON-COMPLIANT' }}"
-      - "9.1.3 Outbound Connections: {{ 'COMPLIANT' if windows_server__cis_9_1_3_current == 'Allow' else 'NON-COMPLIANT' }}"
+      - "9.1.1 Firewall State: {{ 'COMPLIANT' if ansible_firewall.domain.enabled | default(false) == (windows_server_cis_windows_firewall_domain_firewall_state == 'On') else 'NON-COMPLIANT' }}"
+      - "9.1.2 Inbound Connections: {{ 'COMPLIANT' if ansible_firewall.domain.inbound_action | default('Allow') | title == windows_server_cis_windows_firewall_domain_inbound_connections else 'NON-COMPLIANT' }}"
+      - "9.1.3 Outbound Connections: {{ 'COMPLIANT' if ansible_firewall.domain.outbound_action | default('Allow') | title == windows_server_cis_windows_firewall_domain_outbound_connections else 'NON-COMPLIANT' }}"
       - "9.1.4 Display Notification: {{ 'COMPLIANT' if (windows_server__cis_9_1_4_current.value | default(1) == 1) else 'NON-COMPLIANT' }}"
       - "9.1.5 Logging Name: {{ 'COMPLIANT' if (windows_server__cis_9_1_5_current.value | default('') == windows_server_cis_windows_firewall_domain_logging_name) else 'NON-COMPLIANT' }}"
       - ""
       - "Private Profile:"
-      - "9.2.1 Firewall State: {{ 'COMPLIANT' if windows_server__cis_9_2_1_current == 'On' else 'NON-COMPLIANT' }}"
-      - "9.2.2 Inbound Connections: {{ 'COMPLIANT' if windows_server__cis_9_2_2_current == 'Block' else 'NON-COMPLIANT' }}"
+      - "9.2.1 Firewall State: {{ 'COMPLIANT' if ansible_firewall.private.enabled | default(false) == (windows_server_cis_windows_firewall_private_firewall_state == 'On') else 'NON-COMPLIANT' }}"
+      - "9.2.2 Inbound Connections: {{ 'COMPLIANT' if ansible_firewall.private.inbound_action | default('Allow') | title == windows_server_cis_windows_firewall_private_inbound_connections else 'NON-COMPLIANT' }}"
       - ""
       - "Public Profile:"
-      - "9.3.1 Firewall State: {{ 'COMPLIANT' if windows_server__cis_9_3_1_current == 'On' else 'NON-COMPLIANT' }}"
-      - "9.3.2 Inbound Connections: {{ 'COMPLIANT' if windows_server__cis_9_3_2_current == 'Block' else 'NON-COMPLIANT' }}"
+      - "9.3.1 Firewall State: {{ 'COMPLIANT' if ansible_firewall.public.enabled | default(false) == (windows_server_cis_windows_firewall_public_firewall_state == 'On') else 'NON-COMPLIANT' }}"
+      - "9.3.2 Inbound Connections: {{ 'COMPLIANT' if ansible_firewall.public.inbound_action | default('Allow') | title == windows_server_cis_windows_firewall_public_inbound_connections else 'NON-COMPLIANT' }}"
       - ""
       - "Note: Additional 5 firewall controls require implementation for complete coverage"
       - "This demonstrates enterprise Windows Firewall automation"

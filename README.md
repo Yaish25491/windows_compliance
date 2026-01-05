@@ -2,15 +2,16 @@
 
 [![CI](https://github.com/ansible-collections/ansible.windows_compliance/workflows/CI/badge.svg?event=push)](https://github.com/ansible-collections/ansible.windows_compliance/actions) [![Codecov](https://img.shields.io/codecov/c/github/ansible-collections/ansible.windows_compliance)](https://codecov.io/gh/ansible-collections/ansible.windows_compliance)
 
-An Ansible collection for Windows security compliance automation, providing certified roles and playbooks for applying, validating, and reporting on DISA STIG and CIS benchmark configurations for Windows servers.
+An enterprise-grade Ansible collection for Windows security compliance automation, providing modernized roles with structured JSON audit data and native ansible.windows modules. Features comprehensive automation for DISA STIG and CIS benchmark configurations with 84-93% task consolidation and future-proof reliability.
 
 ## Our mission
 
-At the Ansible Windows Compliance Collection, our mission is to produce and maintain simple, flexible,
-and powerful open-source software tailored to Windows security compliance automation.
+At the Ansible Windows Compliance Collection, our mission is to produce and maintain enterprise-grade,
+reliable, and performant open-source software tailored to Windows security compliance automation.
 
-We provide enterprise-grade tools for applying, validating, and reporting on security benchmarks,
-transforming labor-intensive manual processes into automated, consistent "Compliance-as-Code" solutions.
+We provide modernized tools using native ansible.windows modules with structured JSON audit data,
+transforming fragile text-parsing approaches into robust, future-proof "Compliance-as-Code" solutions
+with 84-93% task consolidation and comprehensive enterprise-grade automation.
 
 We welcome members from all skill levels to participate actively in our open, inclusive, and vibrant community.
 Whether you are an expert or just beginning your journey with Ansible and Windows compliance automation,

@@ -8,14 +8,12 @@
 # =============================================================================
 
 - name: CIS 1.2.1 | AUDIT | Get current account lockout duration setting
-  ansible.windows.win_shell: |
-    net accounts | Select-String "Lockout duration" | ForEach-Object { 
-      if ($_ -match "(\d+)") { $matches[1] } else { "30" }
-    }
+  community.windows.win_security_policy:
+    section: System Access
+    key: LockoutDuration
+    value: "{{ windows_server__cis_account_lockout_duration }}"
   register: windows_server__cis_1_2_1_current
-  changed_when: false
-  failed_when: false
-  check_mode: false
+  check_mode: true
   tags:
     - cis_1.2.1
     - account_lockout
@@ -23,12 +21,14 @@
     - audit
 
 - name: CIS 1.2.1 | SCORED | Set account lockout duration ({{ windows_server__cis_account_lockout_duration }} minutes)
-  ansible.windows.win_shell: |
-    net accounts /lockoutduration:{{ windows_server__cis_account_lockout_duration }}
+  community.windows.win_security_policy:
+    section: System Access
+    key: LockoutDuration
+    value: "{{ windows_server__cis_account_lockout_duration }}"
   register: windows_server__cis_1_2_1_result
   when:
     - "'1.2.1' not in windows_server__cis_skip_rules"
-    - windows_server__cis_1_2_1_current.stdout | trim != windows_server__cis_account_lockout_duration | string
+    - windows_server__cis_1_2_1_current.value | string != windows_server__cis_account_lockout_duration | string
     - windows_server__cis_account_lockout_duration | int >= 15
   tags:
     - cis_1.2.1
@@ -47,15 +47,15 @@
         'scored': true,
         'level': 'Level 1',
         'expected_value': windows_server__cis_account_lockout_duration,
-        'current_value': windows_server__cis_1_2_1_current.stdout | trim,
-        'status': 'PASS' if (windows_server__cis_1_2_1_current.stdout | trim == windows_server__cis_account_lockout_duration | string) else 'FAIL',
+        'current_value': windows_server__cis_1_2_1_current.value | default('Not Configured'),
+        'status': 'PASS' if (windows_server__cis_1_2_1_current.value | string == windows_server__cis_account_lockout_duration | string) else 'FAIL',
         'changed': windows_server__cis_1_2_1_result.changed | default(false),
         'skip_reason': 'User configured skip' if '1.2.1' in windows_server__cis_skip_rules else '',
         'check_mode': ansible_check_mode
       }] }}
     windows_server__cis_failed_controls: >-
       {{ windows_server__cis_failed_controls + ['1.2.1'] 
-         if (windows_server__cis_1_2_1_current.stdout | trim != windows_server__cis_account_lockout_duration | string and 
+         if (windows_server__cis_1_2_1_current.value | string != windows_server__cis_account_lockout_duration | string and 
              '1.2.1' not in windows_server__cis_skip_rules) 
          else windows_server__cis_failed_controls }}
     windows_server__cis_skipped_controls: >-
@@ -71,14 +71,12 @@
 # =============================================================================
 
 - name: CIS 1.2.2 | AUDIT | Get current account lockout threshold setting
-  ansible.windows.win_shell: |
-    net accounts | Select-String "Lockout threshold" | ForEach-Object { 
-      if ($_ -match "(\d+)") { $matches[1] } else { "0" }
-    }
+  community.windows.win_security_policy:
+    section: System Access
+    key: LockoutBadCount
+    value: "{{ windows_server__cis_account_lockout_threshold }}"
   register: windows_server__cis_1_2_2_current
-  changed_when: false
-  failed_when: false
-  check_mode: false
+  check_mode: true
   tags:
     - cis_1.2.2
     - account_lockout
@@ -86,12 +84,14 @@
     - audit
 
 - name: CIS 1.2.2 | SCORED | Set account lockout threshold ({{ windows_server__cis_account_lockout_threshold }} attempts)
-  ansible.windows.win_shell: |
-    net accounts /lockoutthreshold:{{ windows_server__cis_account_lockout_threshold }}
+  community.windows.win_security_policy:
+    section: System Access
+    key: LockoutBadCount
+    value: "{{ windows_server__cis_account_lockout_threshold }}"
   register: windows_server__cis_1_2_2_result
   when:
     - "'1.2.2' not in windows_server__cis_skip_rules"
-    - windows_server__cis_1_2_2_current.stdout | trim != windows_server__cis_account_lockout_threshold | string
+    - windows_server__cis_1_2_2_current.value | string != windows_server__cis_account_lockout_threshold | string
     - windows_server__cis_account_lockout_threshold | int > 0
     - windows_server__cis_account_lockout_threshold | int <= 5
   tags:
@@ -111,15 +111,15 @@
         'scored': true,
         'level': 'Level 1',
         'expected_value': windows_server__cis_account_lockout_threshold,
-        'current_value': windows_server__cis_1_2_2_current.stdout | trim,
-        'status': 'PASS' if (windows_server__cis_1_2_2_current.stdout | trim == windows_server__cis_account_lockout_threshold | string) else 'FAIL',
+        'current_value': windows_server__cis_1_2_2_current.value | default('Not Configured'),
+        'status': 'PASS' if (windows_server__cis_1_2_2_current.value | string == windows_server__cis_account_lockout_threshold | string) else 'FAIL',
         'changed': windows_server__cis_1_2_2_result.changed | default(false),
         'skip_reason': 'User configured skip' if '1.2.2' in windows_server__cis_skip_rules else '',
         'check_mode': ansible_check_mode
       }] }}
     windows_server__cis_failed_controls: >-
       {{ windows_server__cis_failed_controls + ['1.2.2'] 
-         if (windows_server__cis_1_2_2_current.stdout | trim != windows_server__cis_account_lockout_threshold | string and 
+         if (windows_server__cis_1_2_2_current.value | string != windows_server__cis_account_lockout_threshold | string and 
              '1.2.2' not in windows_server__cis_skip_rules) 
          else windows_server__cis_failed_controls }}
     windows_server__cis_skipped_controls: >-
@@ -135,14 +135,12 @@
 # =============================================================================
 
 - name: CIS 1.2.3 | AUDIT | Get current reset account lockout counter setting
-  ansible.windows.win_shell: |
-    net accounts | Select-String "Lockout observation window" | ForEach-Object { 
-      if ($_ -match "(\d+)") { $matches[1] } else { "30" }
-    }
+  community.windows.win_security_policy:
+    section: System Access
+    key: ResetLockoutCount
+    value: "{{ windows_server__cis_reset_account_lockout_counter }}"
   register: windows_server__cis_1_2_3_current
-  changed_when: false
-  failed_when: false
-  check_mode: false
+  check_mode: true
   tags:
     - cis_1.2.3
     - account_lockout
@@ -150,12 +148,14 @@
     - audit
 
 - name: CIS 1.2.3 | SCORED | Set reset account lockout counter ({{ windows_server__cis_reset_account_lockout_counter }} minutes)
-  ansible.windows.win_shell: |
-    net accounts /lockoutwindow:{{ windows_server__cis_reset_account_lockout_counter }}
+  community.windows.win_security_policy:
+    section: System Access
+    key: ResetLockoutCount
+    value: "{{ windows_server__cis_reset_account_lockout_counter }}"
   register: windows_server__cis_1_2_3_result
   when:
     - "'1.2.3' not in windows_server__cis_skip_rules"
-    - windows_server__cis_1_2_3_current.stdout | trim != windows_server__cis_reset_account_lockout_counter | string
+    - windows_server__cis_1_2_3_current.value | string != windows_server__cis_reset_account_lockout_counter | string
     - windows_server__cis_reset_account_lockout_counter | int >= 15
   tags:
     - cis_1.2.3
@@ -174,15 +174,15 @@
         'scored': true,
         'level': 'Level 1',
         'expected_value': windows_server__cis_reset_account_lockout_counter,
-        'current_value': windows_server__cis_1_2_3_current.stdout | trim,
-        'status': 'PASS' if (windows_server__cis_1_2_3_current.stdout | trim == windows_server__cis_reset_account_lockout_counter | string) else 'FAIL',
+        'current_value': windows_server__cis_1_2_3_current.value | default('Not Configured'),
+        'status': 'PASS' if (windows_server__cis_1_2_3_current.value | string == windows_server__cis_reset_account_lockout_counter | string) else 'FAIL',
         'changed': windows_server__cis_1_2_3_result.changed | default(false),
         'skip_reason': 'User configured skip' if '1.2.3' in windows_server__cis_skip_rules else '',
         'check_mode': ansible_check_mode
       }] }}
     windows_server__cis_failed_controls: >-
       {{ windows_server__cis_failed_controls + ['1.2.3'] 
-         if (windows_server__cis_1_2_3_current.stdout | trim != windows_server__cis_reset_account_lockout_counter | string and 
+         if (windows_server__cis_1_2_3_current.value | string != windows_server__cis_reset_account_lockout_counter | string and 
              '1.2.3' not in windows_server__cis_skip_rules) 
          else windows_server__cis_failed_controls }}
     windows_server__cis_skipped_controls: >-
@@ -203,9 +203,9 @@
       - "=========================================="
       - "CIS Section 1.2: Account Lockout Policy Summary"
       - "=========================================="
-      - "1.2.1 Account Lockout Duration: {{ windows_server__cis_account_lockout_duration }} minutes ({{ 'COMPLIANT' if windows_server__cis_1_2_1_current.stdout | trim == windows_server__cis_account_lockout_duration | string else 'NON-COMPLIANT' }})"
-      - "1.2.2 Account Lockout Threshold: {{ windows_server__cis_account_lockout_threshold }} attempts ({{ 'COMPLIANT' if windows_server__cis_1_2_2_current.stdout | trim == windows_server__cis_account_lockout_threshold | string else 'NON-COMPLIANT' }})"
-      - "1.2.3 Reset Account Lockout Counter: {{ windows_server__cis_reset_account_lockout_counter }} minutes ({{ 'COMPLIANT' if windows_server__cis_1_2_3_current.stdout | trim == windows_server__cis_reset_account_lockout_counter | string else 'NON-COMPLIANT' }})"
+      - "1.2.1 Account Lockout Duration: {{ windows_server__cis_account_lockout_duration }} minutes ({{ 'COMPLIANT' if windows_server__cis_1_2_1_current.value | string == windows_server__cis_account_lockout_duration | string else 'NON-COMPLIANT' }})"
+      - "1.2.2 Account Lockout Threshold: {{ windows_server__cis_account_lockout_threshold }} attempts ({{ 'COMPLIANT' if windows_server__cis_1_2_2_current.value | string == windows_server__cis_account_lockout_threshold | string else 'NON-COMPLIANT' }})"
+      - "1.2.3 Reset Account Lockout Counter: {{ windows_server__cis_reset_account_lockout_counter }} minutes ({{ 'COMPLIANT' if windows_server__cis_1_2_3_current.value | string == windows_server__cis_reset_account_lockout_counter | string else 'NON-COMPLIANT' }})"
       - "=========================================="
       - "Execution Mode: {{ 'CHECK MODE (No Changes Applied)' if ansible_check_mode else 'APPLY MODE (Changes Applied)' }}"
       - "=========================================="
@@ -214,3 +214,27 @@
     - account_lockout
     - section_1
     - summary
+
+# =============================================================================
+# CONSOLIDATED TASK - Configure all account lockout policies in one operation
+# =============================================================================
+
+- name: CIS Section 1.2 | CONSOLIDATED | Configure account lockout policies
+  community.windows.win_security_policy:
+    section: System Access
+    key: "{{ item.key }}"
+    value: "{{ item.value }}"
+  loop:
+    - key: LockoutDuration
+      value: "{{ windows_server__cis_account_lockout_duration }}"
+    - key: LockoutBadCount
+      value: "{{ windows_server__cis_account_lockout_threshold }}"
+    - key: ResetLockoutCount
+      value: "{{ windows_server__cis_reset_account_lockout_counter }}"
+  when:
+    - item.key == 'LockoutDuration' and '1.2.1' not in windows_server__cis_skip_rules
+    - item.key == 'LockoutBadCount' and '1.2.2' not in windows_server__cis_skip_rules
+    - item.key == 'ResetLockoutCount' and '1.2.3' not in windows_server__cis_skip_rules
+  tags:
+    - account_lockout
+    - consolidated
