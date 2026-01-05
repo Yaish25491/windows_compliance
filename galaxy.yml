@@ -3,14 +3,16 @@
 
 namespace: ansible
 name: windows_compliance
-version: 0.1.0
+version: 1.0.0
 readme: README.md
 authors:
   - Red Hat Ansible Content Team
 description: |
-  Ansible collection for Windows security compliance automation.
-  Provides roles and playbooks for applying, validating, and reporting
-  on DISA STIG and CIS benchmark configurations for Windows servers.
+  Enterprise-grade Ansible collection for Windows security compliance automation.
+  Modernized implementation using native ansible.windows modules with structured
+  JSON audit data and consolidated task management. Provides comprehensive
+  automation for DISA STIG and CIS benchmark configurations on Windows servers
+  with enterprise-grade reliability and performance optimization.
 license_file: LICENSE
 tags:
   - windows
@@ -20,6 +22,9 @@ tags:
   - cis
   - hardening
   - audit
+  - enterprise
+  - automation
+  - modernized
 repository: https://github.com/ansible-collections/ansible.windows_compliance
 documentation: https://docs.ansible.com/ansible/devel/collections/ansible/windows_compliance
 homepage: https://github.com/ansible-collections/ansible.windows_compliance
