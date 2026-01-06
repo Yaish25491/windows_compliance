@@ -114,6 +114,12 @@
 # COMPLIANCE REPORT GENERATION
 # =============================================================================
 
+- name: STIG | Calculate control totals from results
+  ansible.builtin.set_fact:
+    windows_server__stig_total_controls: "{{ windows_server__stig_results | length }}"
+    windows_server__stig_passed_controls: "{{ (windows_server__stig_results | selectattr('status', 'equalto', 'PASS') | list | length) }}"
+    windows_server__stig_failed_controls_count: "{{ (windows_server__stig_results | selectattr('status', 'equalto', 'FAIL') | list | length) }}"
+
 - name: STIG | Calculate final compliance metrics
   ansible.builtin.set_fact:
     windows_server__stig_compliance_score: >-

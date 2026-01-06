@@ -1,9 +1,8 @@
 ---
 new_roles:
-  - name: windows_server_cis
-    description: Enterprise-grade Windows Server 2022 CIS Benchmark compliance role with native ansible.windows modules
+  - windows_server_cis
 
-new_features:
+minor_changes:
   - "windows_server_cis - Structured JSON audit operations with robust data structures eliminating fragile text parsing vulnerabilities"
   - "windows_server_cis - Comprehensive audit-then-remediate pattern ensuring true idempotency across all configuration controls"
   - "windows_server_cis - Data-driven configuration matrices consolidating 25+ individual audit controls for improved maintainability"

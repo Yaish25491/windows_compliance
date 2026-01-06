@@ -1,9 +1,8 @@
 ---
 new_roles:
-  - name: windows_server_stig
-    description: Enterprise-grade Windows Server DISA STIG compliance role with native ansible.windows modules
+  - windows_server_stig
 
-new_features:
+minor_changes:
   - "windows_server_stig - New role implementing DISA STIG V-254238 through V-254500 compliance with native ansible.windows modules consolidating 200+ individual tasks into 20 structured tasks for enterprise deployment"
   - "windows_server_stig - Comprehensive audit-then-remediate pattern using community.windows.win_security_policy for robust account policy management with government-grade reliability"
   - "windows_server_stig - Advanced audit policies with consolidated PowerShell approach using structured JSON return data and Domain Controller awareness for complex enterprise environments"
